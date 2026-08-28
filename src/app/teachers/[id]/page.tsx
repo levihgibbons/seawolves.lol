@@ -29,6 +29,7 @@ export default async function TeacherProfilePage({
   const reviews = await prisma.review.findMany({
     where: { teacherId: id, status: "VISIBLE" },
     include: {
+      user: { select: { username: true } },
       helpfulVotes: session?.user ? { where: { userId: session.user.id } } : false,
       _count: { select: { helpfulVotes: true } },
     },
@@ -55,10 +56,12 @@ export default async function TeacherProfilePage({
     helpfulCount: r._count.helpfulVotes,
     viewerHasVoted: session?.user ? r.helpfulVotes.length > 0 : false,
     isOwn: session?.user ? r.userId === session.user.id : false,
+    username: r.user.username,
   }));
 
   const rawComments = await prisma.comment.findMany({
     where: { teacherId: id, status: "VISIBLE" },
+    include: { user: { select: { username: true } } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -70,6 +73,7 @@ export default async function TeacherProfilePage({
       createdAt: c.createdAt.toISOString(),
       body: c.body,
       isOwn: session?.user ? c.userId === session.user.id : false,
+      username: c.user.username,
       replies: [],
     });
   }

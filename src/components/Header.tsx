@@ -31,7 +31,7 @@ export async function Header() {
         <div className="flex items-center gap-3">
           {session?.user ? (
             <UserMenu
-              name={session.user.name ?? session.user.email ?? "Account"}
+              name={session.user.username ?? session.user.name ?? session.user.email ?? "Account"}
               email={session.user.email ?? ""}
               isAdmin={session.user.role === "ADMIN"}
             />

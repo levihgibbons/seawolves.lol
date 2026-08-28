@@ -36,6 +36,9 @@ export async function requireActivePostingUser() {
   if (!dbUser || dbUser.status !== "ACTIVE") {
     throw new ApiError(403, "Your account is not able to post right now.");
   }
+  if (!dbUser.username) {
+    throw new ApiError(403, "Choose a username before posting.");
+  }
   return user;
 }
 

@@ -10,6 +10,7 @@ declare module "@auth/core/types" {
       id: string;
       role: string;
       emailVerified: boolean;
+      username: string | null;
     } & DefaultSession["user"];
   }
 
@@ -17,6 +18,7 @@ declare module "@auth/core/types" {
     id: string;
     role: string;
     emailVerified: boolean;
+    username: string | null;
   }
 }
 
@@ -25,5 +27,6 @@ declare module "@auth/core/jwt" {
     id: string;
     role: string;
     emailVerified: boolean;
+    username: string | null;
   }
 }

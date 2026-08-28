@@ -26,9 +26,24 @@ export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
 });
 
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, "Username must be at least 3 characters.")
+  .max(20, "Username must be at most 20 characters.")
+  .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores.");
+
+export const setUsernameSchema = z.object({
+  username: usernameSchema,
+});
+
 export const resetPasswordSchema = z.object({
   token: z.string().min(1),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  // Only sent (and only ever applied once) by the "code verified, now
+  // create your account" step of the login flow — see
+  // src/app/login/page.tsx and src/lib/username.ts.
+  username: usernameSchema.optional(),
 });
 
 export const reviewSchema = z.object({

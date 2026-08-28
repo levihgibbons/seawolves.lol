@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { PasswordInput } from "@/components/PasswordInput";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 type Step = "email" | "password" | "code" | "setPassword" | "google-only";
@@ -28,6 +29,8 @@ function LoginForm() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [resetToken, setResetToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(
@@ -41,6 +44,8 @@ function LoginForm() {
   function reset() {
     setStep("email");
     setPassword("");
+    setConfirmPassword("");
+    setUsername("");
     setCode("");
     setResetToken(null);
     setError(null);
@@ -108,9 +113,13 @@ function LoginForm() {
   async function submitNewPassword(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (password !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
     setLoading(true);
     try {
-      await postJson("/api/auth/reset-password", { token: resetToken, password });
+      await postJson("/api/auth/reset-password", { token: resetToken, password, username });
       const result = await signIn("credentials", { email, password, redirect: false });
       if (result?.error) throw new Error("Account created, but sign-in failed — try signing in below.");
       router.push(callbackUrl);
@@ -128,7 +137,7 @@ function LoginForm() {
       : step === "code"
         ? "Verify your email"
         : step === "setPassword"
-          ? "Create a password"
+          ? "Create your account"
           : "Sign in";
 
   const subtext =
@@ -137,7 +146,7 @@ function LoginForm() {
       : step === "code"
         ? `We sent a 6-digit code to ${email}.`
         : step === "setPassword"
-          ? "You're verified — pick a password to finish setting up your account."
+          ? "You're verified — choose a username and password to finish setting up your account."
           : step === "google-only"
             ? `${email} uses Google sign-in.`
             : "Enter your email to sign in or create an account.";
@@ -243,18 +252,45 @@ function LoginForm() {
         {step === "setPassword" && (
           <form onSubmit={submitNewPassword} className="space-y-4">
             <div>
-              <Label htmlFor="new-password">Password</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="new-password"
-                type="password"
+                id="username"
                 required
                 autoFocus
+                minLength={3}
+                maxLength={20}
+                pattern="[a-zA-Z0-9_]+"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                3-20 characters: letters, numbers, and underscores. This is how you&apos;ll be
+                identified in reviews and comments.
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="new-password">Password</Label>
+              <PasswordInput
+                id="new-password"
+                required
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
               />
               <p className="mt-1 text-xs text-gray-400">At least 8 characters.</p>
+            </div>
+            <div>
+              <Label htmlFor="confirm-password">Confirm password</Label>
+              <PasswordInput
+                id="confirm-password"
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+              />
             </div>
             <ErrorText>{error}</ErrorText>
             <Button type="submit" className="w-full" disabled={loading}>

@@ -29,6 +29,7 @@ export default async function AccountPage() {
       <h1 className="text-2xl font-bold text-gray-900">My account</h1>
 
       <Card className="mt-4 p-4">
+        <p className="font-medium text-gray-900">{session.user.username}</p>
         <p className="text-sm text-gray-600">{session.user.email}</p>
         <div className="mt-2 flex items-center gap-2">
           <Badge tone="green">Email verified</Badge>

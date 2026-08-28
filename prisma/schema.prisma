@@ -28,6 +28,7 @@ model User {
   email                    String    @unique
   hashedPassword           String? // null for accounts that only ever signed in with Google
   name                     String?
+  username                 String?   @unique // display identity in reviews/comments; null until the user completes signup/onboarding
   role                     String    @default("STUDENT") // STUDENT | ADMIN
   status                   String    @default("ACTIVE") // ACTIVE | SUSPENDED | BANNED
   emailVerified            DateTime?

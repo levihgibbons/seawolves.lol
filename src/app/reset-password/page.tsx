@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
-import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { Button, Label, ErrorText, Card } from "@/components/ui";
+import { PasswordInput } from "@/components/PasswordInput";
 
 function ResetForm() {
   const router = useRouter();
@@ -55,9 +56,8 @@ function ResetForm() {
           <form onSubmit={submit} className="space-y-4">
             <div>
               <Label htmlFor="password">New password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 minLength={8}
                 value={password}

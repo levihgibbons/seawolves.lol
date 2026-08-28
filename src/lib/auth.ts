@@ -41,6 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           role: user.role,
           emailVerified: user.emailVerified !== null,
+          username: user.username,
         };
       },
     }),
@@ -79,7 +80,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // Fired by the client's useSession().update({ username }) call right
+      // after /api/auth/set-username or /api/auth/reset-password writes
+      // it — merge it in directly rather than round-tripping to the DB.
+      if (trigger === "update" && session && typeof session.username === "string") {
+        token.username = session.username;
+        return token;
+      }
+
       if (account?.provider === "google") {
         // signIn() above guarantees a matching User row exists by now.
         const dbUser = await prisma.user.findUnique({ where: { email: token.email! } });
@@ -87,6 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.id = dbUser.id;
           token.role = dbUser.role;
           token.emailVerified = dbUser.emailVerified !== null;
+          token.username = dbUser.username;
         }
         return token;
       }
@@ -96,11 +106,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // an `AdapterUser` (no adapter is configured). The library's own
       // param type is a broader `User | AdapterUser` union, so narrow it
       // here rather than fighting that union in the callback signature.
-      const appUser = user as { id: string; role: string; emailVerified: boolean } | undefined;
+      const appUser = user as
+        | { id: string; role: string; emailVerified: boolean; username: string | null }
+        | undefined;
       if (appUser) {
         token.id = appUser.id;
         token.role = appUser.role;
         token.emailVerified = appUser.emailVerified;
+        token.username = appUser.username;
       }
       return token;
     },
@@ -108,6 +121,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.emailVerified = token.emailVerified;
+      session.user.username = token.username;
       return session;
     },
   },

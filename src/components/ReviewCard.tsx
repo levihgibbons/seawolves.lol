@@ -21,6 +21,7 @@ export type ReviewCardData = {
   helpfulCount: number;
   viewerHasVoted: boolean;
   isOwn: boolean;
+  username: string | null;
 };
 
 export function ReviewCard({
@@ -64,6 +65,8 @@ export function ReviewCard({
     <div className="border-b border-gray-200 py-5 last:border-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-700">{review.username ?? "Seawolf"}</span>
+          <span className="text-xs text-gray-400">·</span>
           <StarRatingDisplay value={overall} size="sm" />
           <span className="text-xs text-gray-400">·</span>
           <span className="text-xs text-gray-500">{formatRelativeTime(new Date(review.createdAt))}</span>

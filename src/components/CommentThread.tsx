@@ -12,6 +12,7 @@ export type CommentNode = {
   createdAt: string;
   body: string;
   isOwn: boolean;
+  username: string | null;
   replies: CommentNode[];
 };
 
@@ -101,7 +102,7 @@ function CommentItem({
   return (
     <div className={depth > 0 ? "mt-3 border-l-2 border-gray-100 pl-4" : "border-b border-gray-200 py-4 last:border-0"}>
       <div className="flex items-center gap-2 text-xs text-gray-500">
-        <span className="font-medium text-gray-700">Seawolf</span>
+        <span className="font-medium text-gray-700">{comment.username ?? "Seawolf"}</span>
         <span>·</span>
         <span>{formatRelativeTime(new Date(comment.createdAt))}</span>
         {comment.isOwn && <Badge tone="navy">You</Badge>}
