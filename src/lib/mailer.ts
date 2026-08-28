@@ -8,7 +8,7 @@
 // wherever the domain's DNS lives).
 
 import { Resend } from "resend";
-import { renderEmail } from "./emailTemplates";
+import { renderCodeEmail, renderCtaEmail } from "./emailTemplates";
 
 type Mail = {
   to: string;
@@ -41,19 +41,18 @@ async function deliver(mail: Mail): Promise<void> {
   }
 }
 
-export async function sendVerificationEmail(to: string, verifyUrl: string) {
-  const { html, text } = renderEmail({
-    heading: "Welcome to seawolves.lol!",
-    intro: "Confirm your email address to start posting reviews.",
-    ctaText: "Verify email",
-    ctaUrl: verifyUrl,
-    footnote: "This link expires in 24 hours. If you didn't create this account, you can ignore this email.",
+export async function sendVerificationCodeEmail(to: string, code: string) {
+  const { html, text } = renderCodeEmail({
+    heading: "Verify your email",
+    intro: "Enter this code to finish creating your seawolves.lol account.",
+    code,
+    footnote: "This code expires in 10 minutes. If you didn't request this, you can ignore this email.",
   });
-  await deliver({ to, subject: "Verify your seawolves.lol account", html, text });
+  await deliver({ to, subject: `${code} is your seawolves.lol verification code`, html, text });
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  const { html, text } = renderEmail({
+  const { html, text } = renderCtaEmail({
     heading: "Reset your password",
     intro: "We received a request to reset your seawolves.lol password.",
     ctaText: "Reset password",

@@ -41,11 +41,6 @@ export function Footer() {
                   Sign in
                 </Link>
               </li>
-              <li>
-                <Link href="/signup" className="hover:text-navy">
-                  Create an account
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

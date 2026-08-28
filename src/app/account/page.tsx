@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, Badge } from "@/components/ui";
-import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { formatRelativeTime } from "@/lib/format";
 
@@ -32,21 +31,9 @@ export default async function AccountPage() {
       <Card className="mt-4 p-4">
         <p className="text-sm text-gray-600">{session.user.email}</p>
         <div className="mt-2 flex items-center gap-2">
-          {session.user.emailVerified ? (
-            <Badge tone="green">Email verified</Badge>
-          ) : (
-            <Badge tone="amber">Email not verified</Badge>
-          )}
+          <Badge tone="green">Email verified</Badge>
           {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
         </div>
-        {!session.user.emailVerified && (
-          <div className="mt-4">
-            <p className="mb-2 text-sm text-gray-600">
-              Verify your email to post reviews and comments.
-            </p>
-            <ResendVerificationButton />
-          </div>
-        )}
       </Card>
 
       <div className="mt-7">

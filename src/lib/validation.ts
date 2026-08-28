@@ -8,10 +8,13 @@ import {
 
 const rating = z.number().int().min(1).max(5);
 
-export const registerSchema = z.object({
+export const startSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  name: z.string().trim().min(1).max(100).optional(),
+});
+
+export const verifyCodeSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code."),
 });
 
 export const loginSchema = z.object({

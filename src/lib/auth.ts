@@ -5,22 +5,7 @@ import Google from "next-auth/providers/google";
 import { prisma } from "./prisma";
 import { verifyPassword } from "./hash";
 import { loginSchema } from "./validation";
-
-// Same allowlist/admin logic as the Credentials register route
-// (src/app/api/auth/register/route.ts) — kept in sync manually since a
-// Google sign-in never goes through that route.
-function isAllowedEmail(email: string): boolean {
-  const allowedDomain = (process.env.ALLOWED_EMAIL_DOMAIN ?? "").toLowerCase();
-  return !allowedDomain || email.endsWith(`@${allowedDomain}`);
-}
-
-function roleForEmail(email: string): string {
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return adminEmails.includes(email) ? "ADMIN" : "STUDENT";
-}
+import { isAllowedEmail, roleForEmail } from "./accountPolicy";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -68,10 +53,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Only relevant for the Google provider — Credentials already did all
     // of this validation in authorize() above. No adapter is configured,
     // so this is the one place an OAuth sign-in touches our own User
-    // table: find-or-create by email, enforce the same school-domain
-    // allowlist and suspended/banned check the Credentials path enforces,
-    // and skip the email-verification-link step entirely, since Google
-    // already proved this person controls the inbox.
+    // table: find-or-create by email, enforce the same domain allowlist
+    // and suspended/banned check the Credentials path enforces, and skip
+    // the code-verification step entirely, since Google already proved
+    // this person controls the inbox.
     async signIn({ user, account }) {
       if (account?.provider !== "google") return true;
 

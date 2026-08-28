@@ -93,9 +93,26 @@ With the default `.env`, that's `admin@pacificachristian.example.edu`, etc.
 - `npm run db:seed` — re-run the roster seed (safe to re-run; upserts).
 - `npm run lint` / `npx tsc --noEmit` — lint / typecheck.
 
+## Sign-in flow
+
+`/login` is the single entry point for both signing in and creating an
+account — there's no separate sign-up page (`/signup` just redirects here).
+Enter an email and the server decides what comes next
+(`src/app/api/auth/start`):
+
+- **Existing account with a password** → password field.
+- **New email** (or an abandoned signup that never finished) → a 6-digit code
+  is emailed, entered on the same page, then the account is created and the
+  user picks a password (`src/app/api/auth/verify-code` issues a short-lived
+  token that's handed to the existing `/api/auth/reset-password` route to
+  actually set it — one code path writes `hashedPassword`, whether it's a
+  brand new account or an existing user resetting their password).
+- **Google-only account** → a screen pointing at the "Continue with Google"
+  button instead of a password field they can't use.
+
 ## Email (Resend)
 
-`src/lib/mailer.ts` sends verification and password-reset emails through
+`src/lib/mailer.ts` sends verification codes and password-reset emails through
 [Resend](https://resend.com). Setup:
 
 1. Create a Resend account, then **Settings > API Keys** for `RESEND_API_KEY`.
@@ -117,11 +134,15 @@ Google provider, side by side — a user can sign up either way, and the same
 `ALLOWED_EMAIL_DOMAIN` restriction and admin-email logic (`src/lib/auth.ts`)
 applies to both. A couple of things are specific to the Google path:
 
-- **No password.** Google-only accounts have `hashedPassword: null` — they can't
-  use the Credentials login form or "forgot password" (there's nothing to reset).
-- **Skips email verification.** Google already proved the person controls that
-  inbox, so a Google sign-in sets `emailVerified` immediately — no confirmation
-  link, unlike the Credentials sign-up flow.
+- **No password, until they set one.** Google-only accounts have
+  `hashedPassword: null`, so they can't use the Credentials password field on
+  `/login` (that email routes to a "this account uses Google sign-in" screen
+  instead — see `mode: "google-only"` in `src/app/api/auth/start`). They *can*
+  still go through `/forgot-password` to set one later if they want a second
+  way in; nothing in that flow depends on a password having existed before.
+- **Skips code verification.** Google already proved the person controls that
+  inbox, so a Google sign-in sets `emailVerified` immediately, the same way a
+  completed Credentials sign-up does.
 - **First sign-in creates the account.** There's no separate "register with
   Google" step; signing in with an allowed, not-yet-seen email creates the
   `User` row on the spot.
@@ -202,15 +223,15 @@ above).
 
 ## Notable decisions made where the spec was ambiguous
 
-- **Login vs. posting verification.** The spec says "email verification required
-  before posting," so sign-in itself only requires an `ACTIVE` account — email
-  verification is enforced at the point of posting a review/comment (with a
-  "resend verification" action on `/account`), not at login. This lets someone
-  browse immediately after signing up.
-- **Verification link requires a click, not just a page load.** `/verify` shows a
-  confirm button rather than auto-consuming the token on page load, so an email
-  security scanner or link-preview bot that fetches the URL can't silently burn a
-  one-time link before the real user clicks it.
+- **Email verification happens before an account exists, not after.** `/login`
+  is a single email-first flow (`src/app/api/auth/start`): a new email gets a
+  6-digit code, and only after that code is confirmed does the account get
+  created and the user choose a password (`src/app/api/auth/verify-code` hands
+  back a short-lived token, reusing the same `resetToken` mechanism as
+  "forgot password" to actually set it). An existing email goes straight to a
+  password prompt. This means every account — Credentials or Google — is
+  always verified from the moment it exists; there's no unverified-but-usable
+  limbo state or a separate "resend verification" step to build.
 - **Failed login shows one generic message** ("invalid email or password, or your
   account isn't active") rather than distinguishing "wrong password" from "banned"
   from "unknown email" — so the login form can't be used to enumerate accounts or

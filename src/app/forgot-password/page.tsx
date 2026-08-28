@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
 import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+function ForgotPasswordForm() {
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -37,17 +39,17 @@ export default function ForgotPasswordPage() {
       <Card className="mt-6 p-6">
         {done ? (
           <p className="text-sm text-gray-600">
-            If an account exists for <strong>{email}</strong>, a reset link was sent. (No email
-            provider is configured yet — the link was logged to the server console.)
+            If an account exists for <strong>{email}</strong>, a reset link was just sent.
           </p>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <Label htmlFor="email">School email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 required
+                autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -61,5 +63,13 @@ export default function ForgotPasswordPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }
