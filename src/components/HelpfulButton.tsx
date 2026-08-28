@@ -45,7 +45,7 @@ export function HelpfulButton({
           setLoading(false);
         }
       }}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${
         voted ? "border-navy bg-steel-light text-navy" : "border-gray-300 text-gray-600 hover:border-navy"
       }`}
     >

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { groupDepartments } from "@/lib/constants";
 
 function Select({
   label,
@@ -23,7 +24,7 @@ function Select({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-9 text-sm text-gray-800 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+          className="w-full appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-9 text-sm text-gray-800 transition-colors duration-150 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
         >
           {children}
         </select>
@@ -74,10 +75,14 @@ export function LeaderboardFilters({
         onChange={(v) => navigate(currentSort, v || undefined)}
       >
         <option value="">All departments</option>
-        {departments.map((dept) => (
-          <option key={dept} value={dept}>
-            {dept}
-          </option>
+        {groupDepartments(departments).map(({ group, departments: depts }) => (
+          <optgroup key={group} label={group}>
+            {depts.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </Select>
     </div>

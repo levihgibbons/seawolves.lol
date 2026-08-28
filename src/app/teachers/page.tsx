@@ -51,8 +51,14 @@ export default async function TeachersPage({
       )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((teacher) => (
-          <TeacherCard key={teacher.id} teacher={teacher} />
+        {filtered.map((teacher, i) => (
+          <div
+            key={teacher.id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
+          >
+            <TeacherCard teacher={teacher} />
+          </div>
         ))}
       </div>
     </div>

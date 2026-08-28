@@ -17,7 +17,7 @@ export function TeacherCard({
 }) {
   return (
     <Link href={`/teachers/${teacher.id}`}>
-      <Card className="flex h-full flex-col gap-2 p-3 transition-shadow hover:shadow-md">
+      <Card className="flex h-full flex-col gap-2 p-3 hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex items-center gap-2.5">
           <Avatar name={teacher.name} photoUrl={teacher.photoUrl} />
           <div className="min-w-0">

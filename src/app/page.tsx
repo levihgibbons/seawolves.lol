@@ -125,8 +125,14 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {topRated.map((teacher) => (
-              <TeacherCard key={teacher.id} teacher={teacher} />
+            {topRated.map((teacher, i) => (
+              <div
+                key={teacher.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
+              >
+                <TeacherCard teacher={teacher} />
+              </div>
             ))}
           </div>
         </section>
