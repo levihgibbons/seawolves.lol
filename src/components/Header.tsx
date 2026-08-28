@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { UserMenu } from "./UserMenu";
+import { AnnouncementBell } from "./AnnouncementBell";
 
 const NAV_LINKS = [
   { href: "/teachers", label: "Roster" },
@@ -11,6 +13,11 @@ const NAV_LINKS = [
 
 export async function Header() {
   const session = await auth();
+  const announcements = await prisma.announcement.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    select: { id: true, title: true, body: true, createdAt: true },
+  });
 
   return (
     <header className="border-b border-navy-dark bg-navy">
@@ -28,12 +35,21 @@ export async function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <AnnouncementBell
+            announcements={announcements.map((a) => ({
+              id: a.id,
+              title: a.title,
+              body: a.body,
+              createdAt: a.createdAt.toISOString(),
+            }))}
+          />
           {session?.user ? (
             <UserMenu
               name={session.user.username ?? session.user.name ?? session.user.email ?? "Account"}
               email={session.user.email ?? ""}
               isAdmin={session.user.role === "ADMIN"}
+              username={session.user.username}
             />
           ) : (
             <Link

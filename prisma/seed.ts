@@ -13,10 +13,15 @@ async function main() {
     if (existing) {
       await prisma.teacher.update({
         where: { id: existing.id },
-        data: { department: teacher.department, photoUrl: teacher.photoUrl, active: true },
+        data: {
+          department: teacher.department,
+          isFaculty: teacher.isFaculty ?? true,
+          photoUrl: teacher.photoUrl,
+          active: true,
+        },
       });
     } else {
-      await prisma.teacher.create({ data: teacher });
+      await prisma.teacher.create({ data: { ...teacher, isFaculty: teacher.isFaculty ?? true } });
     }
   }
 

@@ -19,6 +19,7 @@ export async function getTeachersWithRatings() {
       id: teacher.id,
       name: teacher.name,
       department: teacher.department,
+      isFaculty: teacher.isFaculty,
       photoUrl: teacher.photoUrl,
       overall: breakdown.overall,
       reviewCount: breakdown.count,

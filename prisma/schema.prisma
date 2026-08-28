@@ -29,6 +29,8 @@ model User {
   hashedPassword           String? // null for accounts that only ever signed in with Google
   name                     String?
   username                 String?   @unique // display identity in reviews/comments; null until the user completes signup/onboarding
+  bio                      String? // shown on the user's public /[username] profile page
+  image                    String? // avatar URL for the public profile; falls back to initials (see Avatar.tsx) when unset
   role                     String    @default("STUDENT") // STUDENT | ADMIN
   status                   String    @default("ACTIVE") // ACTIVE | SUSPENDED | BANNED
   emailVerified            DateTime?
@@ -38,10 +40,11 @@ model User {
   resetTokenExpiry         DateTime?
   createdAt                DateTime  @default(now())
 
-  reviews      Review[]
-  comments     Comment[]
-  helpfulVotes HelpfulVote[]
-  flagsFiled   Flag[]        @relation("FlagsFiled")
+  reviews       Review[]
+  comments      Comment[]
+  helpfulVotes  HelpfulVote[]
+  flagsFiled    Flag[]        @relation("FlagsFiled")
+  announcements Announcement[]
 
   @@index([email])
 }
@@ -50,6 +53,12 @@ model Teacher {
   id         String   @id @default(cuid())
   name       String
   department String
+  // Classroom faculty vs. administrative/support staff. Drives which
+  // rating categories apply — e.g. non-teaching staff (Director of
+  // Security, facilities, admissions, etc.) don't assign homework, so
+  // "workload" is hidden for them. See src/lib/constants.ts
+  // `applicableRatingCategories`.
+  isFaculty  Boolean  @default(true)
   photoUrl   String?
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -67,7 +76,7 @@ model Review {
   userId          String
   clarity         Int
   fairness        Int
-  workload        Int
+  workload        Int? // null for reviews of non-faculty staff (Teacher.isFaculty === false) — see constants.ts
   approachability Int
   comment         String
   status          String   @default("VISIBLE") // VISIBLE | REMOVED
@@ -141,4 +150,21 @@ model Flag {
   @@index([commentId])
   @@index([reporterId])
   @@index([status])
+}
+
+// Site-wide announcements, shown via the bell icon in the header (see
+// src/components/AnnouncementBell.tsx). No per-user read-state table —
+// "unread" is just "newer than the timestamp of the last one this browser
+// saw", tracked client-side in localStorage.
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }

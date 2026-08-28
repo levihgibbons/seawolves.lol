@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { RATING_CATEGORIES, RATING_CATEGORY_LABELS, type RatingCategory } from "@/lib/constants";
+import { reviewOverall } from "@/lib/ratings";
 import { formatRelativeTime } from "@/lib/format";
 import { StarRatingDisplay } from "./StarRating";
 import { HelpfulButton } from "./HelpfulButton";
@@ -15,7 +16,7 @@ export type ReviewCardData = {
   createdAt: string;
   clarity: number;
   fairness: number;
-  workload: number;
+  workload: number | null; // null when this review's teacher isn't faculty
   approachability: number;
   comment: string;
   helpfulCount: number;
@@ -29,16 +30,17 @@ export function ReviewCard({
   teacherId,
   teacherName,
   isSignedIn,
+  categories = RATING_CATEGORIES,
 }: {
   review: ReviewCardData;
   teacherId: string;
   teacherName: string;
   isSignedIn: boolean;
+  categories?: readonly RatingCategory[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
-  const overall =
-    (review.clarity + review.fairness + review.workload + review.approachability) / 4;
+  const overall = reviewOverall(review);
 
   if (editing) {
     return (
@@ -47,11 +49,12 @@ export function ReviewCard({
         reviewId={review.id}
         teacherId={teacherId}
         teacherName={teacherName}
+        categories={categories}
         initial={{
           ratings: {
             clarity: review.clarity,
             fairness: review.fairness,
-            workload: review.workload,
+            ...(review.workload !== null && { workload: review.workload }),
             approachability: review.approachability,
           },
           comment: review.comment,
@@ -75,7 +78,7 @@ export function ReviewCard({
       </div>
 
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-        {RATING_CATEGORIES.map((category: RatingCategory) => (
+        {categories.map((category: RatingCategory) => (
           <span key={category}>
             {RATING_CATEGORY_LABELS[category]}: <strong className="text-gray-700">{review[category]}/5</strong>
           </span>

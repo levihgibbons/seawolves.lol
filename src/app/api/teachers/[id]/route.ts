@@ -23,6 +23,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         ...(parsed.data.department !== undefined && { department: parsed.data.department }),
         ...(parsed.data.photoUrl !== undefined && { photoUrl: parsed.data.photoUrl || null }),
         ...(parsed.data.active !== undefined && { active: parsed.data.active }),
+        ...(parsed.data.isFaculty !== undefined && { isFaculty: parsed.data.isFaculty }),
       },
     });
 

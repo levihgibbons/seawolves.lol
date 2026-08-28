@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       data: {
         name: parsed.data.name,
         department: parsed.data.department,
+        isFaculty: parsed.data.isFaculty ?? true,
         photoUrl: parsed.data.photoUrl || null,
       },
     });

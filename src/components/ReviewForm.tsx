@@ -12,7 +12,7 @@ import {
 import { StarRatingInput } from "./StarRating";
 import { Button, Textarea, ErrorText, Card } from "./ui";
 
-type Ratings = Record<RatingCategory, number>;
+type Ratings = Partial<Record<RatingCategory, number>>;
 
 export function ReviewForm({
   teacherId,
@@ -21,6 +21,7 @@ export function ReviewForm({
   reviewId,
   initial,
   onDone,
+  categories = RATING_CATEGORIES,
 }: {
   teacherId: string;
   teacherName: string;
@@ -28,16 +29,19 @@ export function ReviewForm({
   reviewId?: string;
   initial?: { ratings: Ratings; comment: string };
   onDone?: () => void;
+  // Which rating categories to collect — excludes "workload" for
+  // non-faculty staff. See applicableRatingCategories() in constants.ts.
+  categories?: readonly RatingCategory[];
 }) {
   const router = useRouter();
   const [ratings, setRatings] = useState<Ratings>(
-    initial?.ratings ?? { clarity: 0, fairness: 0, workload: 0, approachability: 0 }
+    initial?.ratings ?? Object.fromEntries(categories.map((c) => [c, 0]))
   );
   const [comment, setComment] = useState(initial?.comment ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const allRated = RATING_CATEGORIES.every((c) => ratings[c] > 0);
+  const allRated = categories.every((c) => (ratings[c] ?? 0) > 0);
   const commentTooShort = comment.trim().length < MIN_REVIEW_COMMENT_LENGTH;
 
   async function submit(e: FormEvent) {
@@ -78,7 +82,7 @@ export function ReviewForm({
       </h3>
       <form onSubmit={submit} className="mt-4 space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          {RATING_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <div key={category}>
               <div className="flex items-baseline justify-between">
                 <span className="text-sm font-medium text-gray-800">
@@ -89,7 +93,7 @@ export function ReviewForm({
               <div className="mt-1.5">
                 <StarRatingInput
                   label={RATING_CATEGORY_LABELS[category]}
-                  value={ratings[category]}
+                  value={ratings[category] ?? 0}
                   onChange={(v) => setRatings((r) => ({ ...r, [category]: v }))}
                 />
               </div>

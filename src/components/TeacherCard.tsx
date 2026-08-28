@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "./Avatar";
 import { StarRatingDisplay } from "./StarRating";
-import { Card } from "./ui";
+import { Card, Badge } from "./ui";
 
 export function TeacherCard({
   teacher,
@@ -10,6 +10,7 @@ export function TeacherCard({
     id: string;
     name: string;
     department: string;
+    isFaculty?: boolean;
     photoUrl: string | null;
     overall: number | null;
     reviewCount: number;
@@ -20,8 +21,15 @@ export function TeacherCard({
       <Card className="flex h-full flex-col gap-2 p-3 hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex items-center gap-2.5">
           <Avatar name={teacher.name} photoUrl={teacher.photoUrl} />
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-gray-900">{teacher.name}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <p className="truncate font-semibold text-gray-900">{teacher.name}</p>
+              {teacher.isFaculty === false && (
+                <Badge tone="neutral" className="shrink-0">
+                  Staff
+                </Badge>
+              )}
+            </div>
             <p className="truncate text-xs text-gray-500">{teacher.department}</p>
           </div>
         </div>

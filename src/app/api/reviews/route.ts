@@ -20,6 +20,10 @@ export async function POST(request: Request) {
       throw new ApiError(404, "Teacher not found.");
     }
 
+    if (teacher.isFaculty && workload === undefined) {
+      throw new ApiError(400, "Please rate workload.");
+    }
+
     if (containsProfanity(comment)) {
       throw new ApiError(
         400,
@@ -45,7 +49,7 @@ export async function POST(request: Request) {
         userId: user.id,
         clarity,
         fairness,
-        workload,
+        workload: teacher.isFaculty ? workload : null,
         approachability,
         comment,
         autoFlagged: personalLife.flagged,

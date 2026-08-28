@@ -158,14 +158,22 @@ export function CommentThread({
   teacherId,
   comments,
   isSignedIn,
+  closed,
 }: {
   teacherId: string;
   comments: CommentNode[];
   isSignedIn: boolean;
+  // True once the teacher has left Pacifica — history stays visible but no
+  // new comments/replies are accepted (matches the API's own check).
+  closed?: boolean;
 }) {
   return (
     <div>
-      {isSignedIn ? (
+      {closed ? (
+        <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+          This discussion is closed — the person it&apos;s about has left Pacifica.
+        </p>
+      ) : isSignedIn ? (
         <CommentComposer teacherId={teacherId} />
       ) : (
         <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">

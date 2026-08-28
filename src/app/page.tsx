@@ -8,6 +8,7 @@ import { StarRatingDisplay } from "@/components/StarRating";
 import { Button, Card } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
 import { formatRelativeTime } from "@/lib/format";
+import { reviewOverall } from "@/lib/ratings";
 
 export default async function HomePage() {
   const teachers = await getTeachersWithRatings();
@@ -83,9 +84,7 @@ export default async function HomePage() {
                 </p>
               ) : (
                 recentReviews.map((review) => {
-                  const overall =
-                    (review.clarity + review.fairness + review.workload + review.approachability) /
-                    4;
+                  const overall = reviewOverall(review);
                   return (
                     <Link
                       key={review.id}

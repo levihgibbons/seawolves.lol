@@ -97,7 +97,7 @@ export function TeacherFilterPanel({
           }`}
         >
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-            <h2 className="text-base font-semibold text-gray-900">Filter by department</h2>
+            <h2 className="text-base font-semibold text-gray-900">Filter by subject</h2>
             <button
               type="button"
               tabIndex={open ? 0 : -1}
@@ -116,8 +116,8 @@ export function TeacherFilterPanel({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search departments…"
-              aria-label="Search departments"
+              placeholder="Search subjects…"
+              aria-label="Search subjects"
               tabIndex={open ? 0 : -1}
             />
           </div>
@@ -131,13 +131,13 @@ export function TeacherFilterPanel({
                 !currentDepartment ? "bg-steel-light text-navy" : "text-gray-700 hover:bg-gray-50"
               }`}
             >
-              All departments
+              All subjects
             </Link>
           </div>
 
           <div className="flex-1 overflow-y-auto px-2 py-2">
             {visibleGroups.length === 0 && (
-              <p className="px-3 py-4 text-sm text-gray-400">No departments match.</p>
+              <p className="px-3 py-4 text-sm text-gray-400">No subjects match.</p>
             )}
             {visibleGroups.map(({ group, departments: depts }) => (
               <div key={group} className="mb-1">

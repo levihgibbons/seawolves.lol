@@ -26,12 +26,30 @@ export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
 });
 
+// Top-level route segments — a username matching one of these would be
+// unreachable at seawolves.lol/<username> (the real page always wins), so
+// block them at claim time. Keep in sync with src/app/*/ (and src/app/api).
+const RESERVED_USERNAMES = new Set([
+  "account",
+  "admin",
+  "api",
+  "choose-username",
+  "forgot-password",
+  "leaderboard",
+  "login",
+  "reset-password",
+  "signup",
+  "teachers",
+  "the-fallen",
+]);
+
 export const usernameSchema = z
   .string()
   .trim()
   .min(3, "Username must be at least 3 characters.")
   .max(20, "Username must be at most 20 characters.")
-  .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores.");
+  .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores.")
+  .refine((v) => !RESERVED_USERNAMES.has(v.toLowerCase()), "That username is reserved.");
 
 export const setUsernameSchema = z.object({
   username: usernameSchema,
@@ -50,7 +68,10 @@ export const reviewSchema = z.object({
   teacherId: z.string().min(1),
   clarity: rating,
   fairness: rating,
-  workload: rating,
+  // Omitted entirely for reviews of non-faculty staff — see
+  // Teacher.isFaculty and applicableRatingCategories() in constants.ts. The
+  // API routes enforce presence/absence based on the target teacher.
+  workload: rating.optional(),
   approachability: rating,
   comment: z
     .string()
@@ -78,9 +99,20 @@ export const flagSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
+export const profileSchema = z.object({
+  bio: z.string().trim().max(280, "Bio must be at most 280 characters.").optional(),
+  image: z.string().trim().url("Enter a valid image URL.").optional().or(z.literal("")),
+});
+
+export const announcementSchema = z.object({
+  title: z.string().trim().min(1, "Title is required.").max(120),
+  body: z.string().trim().min(1, "Announcement can't be empty.").max(2000),
+});
+
 export const teacherSchema = z.object({
   name: z.string().trim().min(1).max(150),
   department: z.string().trim().min(1).max(150),
   photoUrl: z.string().trim().url().optional().or(z.literal("")),
   active: z.boolean().optional(),
+  isFaculty: z.boolean().optional(),
 });

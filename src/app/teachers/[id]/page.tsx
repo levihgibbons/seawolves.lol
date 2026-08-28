@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRatingBreakdown } from "@/lib/ratings";
-import { RATING_CATEGORIES, RATING_CATEGORY_LABELS } from "@/lib/constants";
+import { RATING_CATEGORY_LABELS, applicableRatingCategories } from "@/lib/constants";
 import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { RatingBar } from "@/components/RatingBar";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewCard, type ReviewCardData } from "@/components/ReviewCard";
 import { CommentThread, type CommentNode } from "@/components/CommentThread";
-import { Card } from "@/components/ui";
+import { Card, Badge } from "@/components/ui";
 
 export default async function TeacherProfilePage({
   params,
@@ -24,7 +24,12 @@ export default async function TeacherProfilePage({
   const session = await auth();
 
   const teacher = await prisma.teacher.findUnique({ where: { id } });
-  if (!teacher || !teacher.active) notFound();
+  // Inactive teachers stay viewable (that's the point of The Fallen — their
+  // reviews live on) — they're just closed to new reviews. Only a teacher
+  // that's never existed 404s.
+  if (!teacher) notFound();
+
+  const categories = applicableRatingCategories(teacher.isFaculty);
 
   const reviews = await prisma.review.findMany({
     where: { teacherId: id, status: "VISIBLE" },
@@ -99,7 +104,11 @@ export default async function TeacherProfilePage({
       <div className="mt-3 flex flex-wrap items-start gap-4 sm:flex-nowrap">
         <Avatar name={teacher.name} photoUrl={teacher.photoUrl} size="lg" />
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{teacher.name}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">{teacher.name}</h1>
+            {!teacher.active && <Badge tone="neutral">🪦 The Fallen</Badge>}
+            {teacher.active && !teacher.isFaculty && <Badge tone="neutral">Staff</Badge>}
+          </div>
           <p className="text-gray-600">{teacher.department}</p>
           <div className="mt-1.5">
             <StarRatingDisplay value={breakdown.overall} />
@@ -112,7 +121,7 @@ export default async function TeacherProfilePage({
 
       <Card className="mt-4 space-y-2.5 p-4">
         <h2 className="text-sm font-semibold text-gray-900">Rating breakdown</h2>
-        {RATING_CATEGORIES.map((category) => (
+        {categories.map((category) => (
           <RatingBar
             key={category}
             label={RATING_CATEGORY_LABELS[category]}
@@ -122,7 +131,12 @@ export default async function TeacherProfilePage({
       </Card>
 
       <div className="mt-5">
-        {!session?.user ? (
+        {!teacher.active ? (
+          <Card className="p-4 text-sm text-gray-600">
+            {teacher.name} is no longer at Pacifica, so this page is closed to new reviews —
+            existing ones are preserved below.
+          </Card>
+        ) : !session?.user ? (
           <Card className="p-4 text-sm text-gray-600">
             <Link href="/login" className="font-medium text-navy hover:underline">
               Sign in
@@ -142,7 +156,12 @@ export default async function TeacherProfilePage({
             You&apos;ve already reviewed {teacher.name} — find it below to edit or delete it.
           </p>
         ) : (
-          <ReviewForm mode="create" teacherId={teacher.id} teacherName={teacher.name} />
+          <ReviewForm
+            mode="create"
+            teacherId={teacher.id}
+            teacherName={teacher.name}
+            categories={categories}
+          />
         )}
       </div>
 
@@ -179,6 +198,7 @@ export default async function TeacherProfilePage({
                 teacherId={teacher.id}
                 teacherName={teacher.name}
                 isSignedIn={!!session?.user}
+                categories={categories}
               />
             ))
           )}

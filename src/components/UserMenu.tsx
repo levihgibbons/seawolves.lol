@@ -8,10 +8,12 @@ export function UserMenu({
   name,
   email,
   isAdmin,
+  username,
 }: {
   name: string;
   email: string;
   isAdmin: boolean;
+  username: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,6 +44,15 @@ export function UserMenu({
           <Link href="/account" className="block px-3 py-2 hover:bg-gray-50" onClick={() => setOpen(false)}>
             My reviews
           </Link>
+          {username && (
+            <Link
+              href={`/${username}`}
+              className="block px-3 py-2 hover:bg-gray-50"
+              onClick={() => setOpen(false)}
+            >
+              My profile
+            </Link>
+          )}
           {isAdmin && (
             <Link href="/admin" className="block px-3 py-2 hover:bg-gray-50" onClick={() => setOpen(false)}>
               Admin dashboard

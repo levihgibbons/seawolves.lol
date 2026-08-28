@@ -9,6 +9,7 @@ export type AdminTeacher = {
   id: string;
   name: string;
   department: string;
+  isFaculty: boolean;
   photoUrl: string | null;
   active: boolean;
   reviewCount: number;
@@ -19,6 +20,7 @@ function AddTeacherForm() {
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [isFaculty, setIsFaculty] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,13 +32,14 @@ function AddTeacherForm() {
       const res = await fetch("/api/teachers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, department, photoUrl: photoUrl || undefined }),
+        body: JSON.stringify({ name, department, isFaculty, photoUrl: photoUrl || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
       setName("");
       setDepartment("");
       setPhotoUrl("");
+      setIsFaculty(true);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -54,7 +57,7 @@ function AddTeacherForm() {
           <Input id="new-name" required value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="flex-1 basis-40">
-          <Label htmlFor="new-dept">Department / subject</Label>
+          <Label htmlFor="new-dept">Subject / role</Label>
           <Input
             id="new-dept"
             required
@@ -72,10 +75,23 @@ function AddTeacherForm() {
             onChange={(e) => setPhotoUrl(e.target.value)}
           />
         </div>
+        <label className="flex items-center gap-1.5 pb-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isFaculty}
+            onChange={(e) => setIsFaculty(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-navy focus:ring-navy"
+          />
+          Classroom teacher
+        </label>
         <Button type="submit" disabled={loading}>
           {loading ? "Adding..." : "Add teacher"}
         </Button>
       </form>
+      <p className="mt-2 text-xs text-gray-400">
+        Uncheck for staff who don&apos;t assign homework (admins, coaches, counselors, etc.) — they
+        won&apos;t get a workload rating.
+      </p>
       <ErrorText>{error}</ErrorText>
     </Card>
   );
@@ -87,6 +103,7 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
   const [name, setName] = useState(teacher.name);
   const [department, setDepartment] = useState(teacher.department);
   const [photoUrl, setPhotoUrl] = useState(teacher.photoUrl ?? "");
+  const [isFaculty, setIsFaculty] = useState(teacher.isFaculty);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -97,7 +114,7 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
       const res = await fetch(`/api/teachers/${teacher.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, department, photoUrl }),
+        body: JSON.stringify({ name, department, photoUrl, isFaculty }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
@@ -139,6 +156,15 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
             className="flex-1 basis-48"
           />
         </div>
+        <label className="flex items-center gap-1.5 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isFaculty}
+            onChange={(e) => setIsFaculty(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-navy focus:ring-navy"
+          />
+          Classroom teacher (gets a workload rating)
+        </label>
         <ErrorText>{error}</ErrorText>
         <div className="flex gap-2">
           <Button onClick={save} disabled={loading} className="text-xs">
@@ -157,8 +183,10 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
       <div className="flex items-center gap-3">
         <Avatar name={teacher.name} photoUrl={teacher.photoUrl} size="sm" />
         <div>
-          <p className="font-medium text-gray-900">
-            {teacher.name} {!teacher.active && <Badge tone="neutral">Removed</Badge>}
+          <p className="flex flex-wrap items-center gap-1.5 font-medium text-gray-900">
+            {teacher.name}
+            {!teacher.active && <Badge tone="neutral">🪦 The Fallen</Badge>}
+            {!teacher.isFaculty && <Badge tone="neutral">Staff</Badge>}
           </p>
           <p className="text-sm text-gray-500">
             {teacher.department} · {teacher.reviewCount} review{teacher.reviewCount === 1 ? "" : "s"}
@@ -175,7 +203,7 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
           disabled={loading}
           className="text-xs"
         >
-          {teacher.active ? "Remove" : "Restore"}
+          {teacher.active ? "Move to The Fallen" : "Restore"}
         </Button>
       </div>
     </Card>

@@ -3,7 +3,7 @@ import { RATING_CATEGORIES, type RatingCategory } from "./constants";
 export type RatableReview = {
   clarity: number;
   fairness: number;
-  workload: number;
+  workload: number | null; // null for reviews of non-faculty staff — see constants.ts
   approachability: number;
 };
 
@@ -12,6 +12,15 @@ export type RatingBreakdown = {
   count: number;
   byCategory: Record<RatingCategory, number | null>;
 };
+
+// A single review's overall score, averaged only over the categories it
+// actually has (i.e. skips workload for a non-faculty staff review).
+export function reviewOverall(review: RatableReview): number {
+  const values = RATING_CATEGORIES.map((c) => review[c]).filter(
+    (v): v is number => v !== null
+  );
+  return values.reduce((sum, v) => sum + v, 0) / values.length;
+}
 
 export function computeRatingBreakdown(reviews: RatableReview[]): RatingBreakdown {
   if (reviews.length === 0) {
@@ -27,26 +36,20 @@ export function computeRatingBreakdown(reviews: RatableReview[]): RatingBreakdow
     };
   }
 
-  const sums: Record<RatingCategory, number> = {
-    clarity: 0,
-    fairness: 0,
-    workload: 0,
-    approachability: 0,
-  };
-
-  for (const review of reviews) {
-    for (const category of RATING_CATEGORIES) {
-      sums[category] += review[category];
-    }
-  }
-
   const byCategory = Object.fromEntries(
-    RATING_CATEGORIES.map((category) => [category, sums[category] / reviews.length])
-  ) as Record<RatingCategory, number>;
+    RATING_CATEGORIES.map((category) => {
+      const values = reviews
+        .map((r) => r[category])
+        .filter((v): v is number => v !== null);
+      return [category, values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null];
+    })
+  ) as Record<RatingCategory, number | null>;
 
+  const present = RATING_CATEGORIES.filter((c) => byCategory[c] !== null);
   const overall =
-    RATING_CATEGORIES.reduce((total, category) => total + byCategory[category], 0) /
-    RATING_CATEGORIES.length;
+    present.length > 0
+      ? present.reduce((total, c) => total + (byCategory[c] as number), 0) / present.length
+      : null;
 
   return { overall, count: reviews.length, byCategory };
 }

@@ -39,6 +39,13 @@ export const RATING_CATEGORY_HELP: Record<RatingCategory, string> = {
   approachability: "Easy to ask questions of, in and out of class",
 };
 
+// Non-faculty staff (Teacher.isFaculty === false) don't assign homework, so
+// "workload" doesn't apply to them — everything else (clarity of
+// communication, fairness, approachability) still does.
+export function applicableRatingCategories(isFaculty: boolean): RatingCategory[] {
+  return isFaculty ? [...RATING_CATEGORIES] : RATING_CATEGORIES.filter((c) => c !== "workload");
+}
+
 export const MIN_REVIEW_COMMENT_LENGTH = 40;
 export const MAX_REVIEW_COMMENT_LENGTH = 2000;
 export const MIN_COMMENT_LENGTH = 2;

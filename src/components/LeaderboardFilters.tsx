@@ -70,11 +70,11 @@ export function LeaderboardFilters({
       </Select>
 
       <Select
-        label="Department"
+        label="Subject"
         value={currentDepartment ?? ""}
         onChange={(v) => navigate(currentSort, v || undefined)}
       >
-        <option value="">All departments</option>
+        <option value="">All subjects</option>
         {groupDepartments(departments).map(({ group, departments: depts }) => (
           <optgroup key={group} label={group}>
             {depts.map((dept) => (

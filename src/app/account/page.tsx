@@ -3,14 +3,22 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, Badge } from "@/components/ui";
+import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
+import { ProfileEditForm } from "@/components/ProfileEditForm";
 import { formatRelativeTime } from "@/lib/format";
+import { reviewOverall } from "@/lib/ratings";
 
 export const metadata = { title: "My Account" };
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user) redirect("/login?callbackUrl=/account");
+
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { bio: true, image: true },
+  });
 
   const reviews = await prisma.review.findMany({
     where: { userId: session.user.id },
@@ -29,12 +37,32 @@ export default async function AccountPage() {
       <h1 className="text-2xl font-bold text-gray-900">My account</h1>
 
       <Card className="mt-4 p-4">
-        <p className="font-medium text-gray-900">{session.user.username}</p>
-        <p className="text-sm text-gray-600">{session.user.email}</p>
-        <div className="mt-2 flex items-center gap-2">
-          <Badge tone="green">Email verified</Badge>
-          {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
+        <div className="flex items-start gap-3">
+          <Avatar name={session.user.username ?? "?"} photoUrl={me?.image} size="md" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-gray-900">{session.user.username}</p>
+            <p className="text-sm text-gray-600">{session.user.email}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Badge tone="green">Email verified</Badge>
+              {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
+              {session.user.username && (
+                <Link
+                  href={`/${session.user.username}`}
+                  className="text-xs font-medium text-navy hover:underline"
+                >
+                  View public profile →
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
+        {session.user.username && (
+          <ProfileEditForm
+            username={session.user.username}
+            initialBio={me?.bio ?? ""}
+            initialImage={me?.image ?? ""}
+          />
+        )}
       </Card>
 
       <div className="mt-7">
@@ -50,8 +78,7 @@ export default async function AccountPage() {
         ) : (
           <div className="mt-3 space-y-3">
             {reviews.map((review) => {
-              const overall =
-                (review.clarity + review.fairness + review.workload + review.approachability) / 4;
+              const overall = reviewOverall(review);
               return (
                 <Link key={review.id} href={`/teachers/${review.teacherId}`}>
                   <Card className="p-4 hover:shadow-md">
