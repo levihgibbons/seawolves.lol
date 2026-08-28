@@ -40,7 +40,7 @@ export default async function HomePage() {
                 Find the right class before you sign up.
               </h1>
               <p className="mt-3 text-base text-gray-600">
-                RateMySeawolf is a school-approved space for Seawolves to share honest, respectful
+                seawolves.lol is a school-approved space for Seawolves to share honest, respectful
                 feedback on teaching quality — clarity, fairness, workload, and approachability.
               </p>
               <div className="mt-5 max-w-lg">

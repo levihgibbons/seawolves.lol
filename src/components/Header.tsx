@@ -17,7 +17,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2 text-white">
           <Image src="/logo.png" alt="" width={512} height={442} className="h-9 w-auto" priority />
-          <span className="text-lg font-semibold tracking-tight">RateMySeawolf</span>
+          <span className="text-lg font-semibold tracking-tight">seawolves.lol</span>
         </Link>
 
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm font-medium text-white/85">

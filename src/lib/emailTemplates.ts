@@ -30,7 +30,7 @@ export function renderEmail({
 <div style="background:${STEEL_LIGHT};padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:8px;border:1px solid ${BORDER};overflow:hidden;">
     <div style="background:${NAVY};padding:18px 24px;">
-      <span style="color:#ffffff;font-size:17px;font-weight:700;">RateMySeawolf</span>
+      <span style="color:#ffffff;font-size:17px;font-weight:700;">seawolves.lol</span>
     </div>
     <div style="padding:28px 24px;">
       <h1 style="margin:0 0 12px;font-size:19px;line-height:1.3;color:${INK};">${heading}</h1>
@@ -44,7 +44,7 @@ export function renderEmail({
     </div>
   </div>
   <p style="max-width:480px;margin:16px auto 0;text-align:center;font-size:11px;color:${FAINT};">
-    RateMySeawolf — not an official Pacifica Christian High School publication.
+    seawolves.lol — not an official Pacifica Christian High School publication.
   </p>
 </div>`.trim();
 

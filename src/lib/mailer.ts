@@ -28,7 +28,7 @@ async function deliver(mail: Mail): Promise<void> {
   }
 
   const resend = new Resend(apiKey);
-  const from = process.env.EMAIL_FROM ?? "RateMySeawolf <onboarding@resend.dev>";
+  const from = process.env.EMAIL_FROM ?? "seawolves.lol <onboarding@resend.dev>";
   const { error } = await resend.emails.send({
     from,
     to: mail.to,
@@ -43,23 +43,23 @@ async function deliver(mail: Mail): Promise<void> {
 
 export async function sendVerificationEmail(to: string, verifyUrl: string) {
   const { html, text } = renderEmail({
-    heading: "Welcome to RateMySeawolf!",
+    heading: "Welcome to seawolves.lol!",
     intro: "Confirm your email address to start posting reviews.",
     ctaText: "Verify email",
     ctaUrl: verifyUrl,
     footnote: "This link expires in 24 hours. If you didn't create this account, you can ignore this email.",
   });
-  await deliver({ to, subject: "Verify your RateMySeawolf account", html, text });
+  await deliver({ to, subject: "Verify your seawolves.lol account", html, text });
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   const { html, text } = renderEmail({
     heading: "Reset your password",
-    intro: "We received a request to reset your RateMySeawolf password.",
+    intro: "We received a request to reset your seawolves.lol password.",
     ctaText: "Reset password",
     ctaUrl: resetUrl,
     footnote:
       "This link expires in 1 hour. If you didn't request this, you can ignore this email — your password won't change.",
   });
-  await deliver({ to, subject: "Reset your RateMySeawolf password", html, text });
+  await deliver({ to, subject: "Reset your seawolves.lol password", html, text });
 }

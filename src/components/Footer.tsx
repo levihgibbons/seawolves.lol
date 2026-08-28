@@ -10,7 +10,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2">
               <Image src="/logo.png" alt="" width={512} height={442} className="h-7 w-auto" />
-              <p className="text-sm font-semibold text-navy">RateMySeawolf</p>
+              <p className="text-sm font-semibold text-navy">seawolves.lol</p>
             </div>
           </div>
           <div>
@@ -51,7 +51,7 @@ export function Footer() {
         </div>
         <div className="mt-8 border-t border-gray-200 pt-6">
           <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} RateMySeawolf. Not an official Pacifica Christian
+            &copy; {new Date().getFullYear()} seawolves.lol. Not an official Pacifica Christian
             High School publication.
           </p>
         </div>

@@ -1,4 +1,4 @@
-# RateMySeawolf
+# seawolves.lol
 
 A teacher-review platform for Pacifica Christian High School — Next.js (App Router) +
 TypeScript + Tailwind, Prisma + Supabase Postgres, NextAuth v5 (email+password and Google).
@@ -102,7 +102,7 @@ With the default `.env`, that's `admin@pacificachristian.example.edu`, etc.
 2. **Settings > Domains** — add and verify a domain you control (adds a couple of
    DNS records, SPF + DKIM, at wherever that domain's DNS lives — Namecheap, in
    this project's case). `EMAIL_FROM` must be an address on that verified domain,
-   e.g. `RateMySeawolf <no-reply@seawolves.lol>`.
+   e.g. `seawolves.lol <no-reply@seawolves.lol>`.
 3. Set both env vars in `.env` (local) and in Vercel's project settings
    (production) — see "Deploying" below.
 

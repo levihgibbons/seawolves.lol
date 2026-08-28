@@ -12,8 +12,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "RateMySeawolf — Pacifica Christian Teacher Reviews",
-    template: "%s — RateMySeawolf",
+    default: "seawolves.lol — Pacifica Christian Teacher Reviews",
+    template: "%s — seawolves.lol",
   },
   description:
     "Teacher reviews and ratings for Pacifica Christian High School, built by and for Seawolves.",

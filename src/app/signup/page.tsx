@@ -57,7 +57,7 @@ export default function SignupPage() {
   return (
     <div className="mx-auto max-w-sm px-4 py-12 sm:px-6">
       <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
-      <p className="mt-1 text-sm text-gray-600">Join the conversation on RateMySeawolf.</p>
+      <p className="mt-1 text-sm text-gray-600">Join the conversation on seawolves.lol.</p>
       <Card className="mt-6 p-6">
         <GoogleSignInButton callbackUrl="/" />
         <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
