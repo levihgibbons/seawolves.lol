@@ -37,11 +37,11 @@ export default async function HomePage() {
                 Pacifica Christian High School
               </p>
               <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-                Find the right class before you sign up.
+                Don&apos;t get stuck with a rough schedule.
               </h1>
               <p className="mt-3 text-base text-gray-600">
-                seawolves.lol is a school-approved space for Seawolves to share honest, respectful
-                feedback on teaching quality — clarity, fairness, workload, and approachability.
+                The real tea on every teacher — clarity, fairness, workload, vibes. Written by
+                Seawolves, for Seawolves. No cap, just honest reviews before you pick your classes.
               </p>
               <div className="mt-5 max-w-lg">
                 <SearchBar placeholder="Search by teacher name or subject..." />

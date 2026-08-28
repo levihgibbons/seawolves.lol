@@ -24,9 +24,6 @@ function shell(contentHtml: string): string {
       ${contentHtml}
     </div>
   </div>
-  <p style="max-width:480px;margin:16px auto 0;text-align:center;font-size:11px;color:${FAINT};">
-    seawolves.lol — not an official Pacifica Christian High School publication.
-  </p>
 </div>`.trim();
 }
 

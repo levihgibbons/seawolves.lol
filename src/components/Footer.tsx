@@ -45,10 +45,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-6">
-          <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} seawolves.lol. Not an official Pacifica Christian
-            High School publication.
-          </p>
+          <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} seawolves.lol</p>
         </div>
       </div>
     </footer>
