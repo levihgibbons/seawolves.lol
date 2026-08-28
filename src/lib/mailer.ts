@@ -8,11 +8,13 @@
 // wherever the domain's DNS lives).
 
 import { Resend } from "resend";
+import { renderEmail } from "./emailTemplates";
 
 type Mail = {
   to: string;
   subject: string;
-  body: string;
+  html: string;
+  text: string;
 };
 
 async function deliver(mail: Mail): Promise<void> {
@@ -20,7 +22,7 @@ async function deliver(mail: Mail): Promise<void> {
   if (!apiKey) {
     const divider = "=".repeat(60);
     console.log(
-      `\n${divider}\n[dev email stub] would send email\nTo: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.body}\n${divider}\n`
+      `\n${divider}\n[dev email stub] would send email\nTo: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.text}\n${divider}\n`
     );
     return;
   }
@@ -31,7 +33,8 @@ async function deliver(mail: Mail): Promise<void> {
     from,
     to: mail.to,
     subject: mail.subject,
-    text: mail.body,
+    html: mail.html,
+    text: mail.text,
   });
   if (error) {
     throw new Error(`Failed to send email via Resend: ${error.message}`);
@@ -39,30 +42,24 @@ async function deliver(mail: Mail): Promise<void> {
 }
 
 export async function sendVerificationEmail(to: string, verifyUrl: string) {
-  await deliver({
-    to,
-    subject: "Verify your RateMySeawolf account",
-    body: [
-      "Welcome to RateMySeawolf!",
-      "",
-      "Confirm your email address to start posting reviews:",
-      verifyUrl,
-      "",
-      "This link expires in 24 hours. If you didn't create this account, you can ignore this email.",
-    ].join("\n"),
+  const { html, text } = renderEmail({
+    heading: "Welcome to RateMySeawolf!",
+    intro: "Confirm your email address to start posting reviews.",
+    ctaText: "Verify email",
+    ctaUrl: verifyUrl,
+    footnote: "This link expires in 24 hours. If you didn't create this account, you can ignore this email.",
   });
+  await deliver({ to, subject: "Verify your RateMySeawolf account", html, text });
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  await deliver({
-    to,
-    subject: "Reset your RateMySeawolf password",
-    body: [
-      "We received a request to reset your RateMySeawolf password.",
-      "",
-      resetUrl,
-      "",
+  const { html, text } = renderEmail({
+    heading: "Reset your password",
+    intro: "We received a request to reset your RateMySeawolf password.",
+    ctaText: "Reset password",
+    ctaUrl: resetUrl,
+    footnote:
       "This link expires in 1 hour. If you didn't request this, you can ignore this email — your password won't change.",
-    ].join("\n"),
   });
+  await deliver({ to, subject: "Reset your RateMySeawolf password", html, text });
 }
