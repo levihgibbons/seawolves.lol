@@ -1,7 +1,7 @@
 # RateMySeawolf
 
 A teacher-review platform for Pacifica Christian High School — Next.js (App Router) +
-TypeScript + Tailwind, Prisma + Supabase Postgres, NextAuth v5 (Credentials/email+password).
+TypeScript + Tailwind, Prisma + Supabase Postgres, NextAuth v5 (email+password and Google).
 
 This is an approved school project, not an anonymous attack site: reviews are tied
 internally to a verified account and moderated (profanity filter, personal-life-content
@@ -17,18 +17,20 @@ addressing them:**
    `ALLOWED_EMAIL_DOMAIN` in `.env` is empty; set it to a real domain
    (e.g. `pacificachristian.org`) if you want to restrict registration to school
    accounts. Leave it empty to keep sign-up open.
-2. **Outbound email.** No email provider is wired up. Verification links and
-   password-reset links are logged to the server console instead of emailed (see
-   `src/lib/mailer.ts`). Before launch, implement `deliver()` there using a real
-   provider (Resend, Postmark, SES, ...) — every call site (`sendVerificationEmail`,
-   `sendPasswordResetEmail`) stays the same.
-3. **Database.** Runs against Supabase Postgres in both dev and production — see
+2. **Outbound email.** Set `RESEND_API_KEY` and `EMAIL_FROM` (see "Email (Resend)"
+   below) — without them, verification and reset links are logged to the server
+   console instead of emailed (fine for local dev, not for real users).
+3. **Google sign-in.** Set `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (see "Google
+   sign-in" below) — without them the Google provider will error if someone clicks
+   "Continue with Google," so either configure it or hide that button.
+4. **Database.** Runs against Supabase Postgres in both dev and production — see
    "Database (Supabase)" below for connection details and the security posture.
-4. **`NEXTAUTH_SECRET`.** Generate a real one for production: `openssl rand -base64
+5. **`NEXTAUTH_SECRET`.** Generate a real one for production: `openssl rand -base64
    32`. The one in your local `.env` is dev-only.
-5. **Admin bootstrap.** `ADMIN_EMAILS` (comma-separated) auto-promotes matching
-   accounts to `ADMIN` the moment they verify. Set this to whoever should moderate
-   the site before real sign-ups start.
+6. **Admin bootstrap.** `ADMIN_EMAILS` (comma-separated) auto-promotes matching
+   accounts to `ADMIN` the moment they verify (Google sign-ins count as verified
+   immediately). Set this to whoever should moderate the site before real
+   sign-ups start.
 
 See `.env.example` for the full list with inline comments.
 
@@ -90,6 +92,56 @@ With the default `.env`, that's `admin@pacificachristian.example.edu`, etc.
 - `npm run db:studio` — Prisma Studio, a GUI for the local database.
 - `npm run db:seed` — re-run the roster seed (safe to re-run; upserts).
 - `npm run lint` / `npx tsc --noEmit` — lint / typecheck.
+
+## Email (Resend)
+
+`src/lib/mailer.ts` sends verification and password-reset emails through
+[Resend](https://resend.com). Setup:
+
+1. Create a Resend account, then **Settings > API Keys** for `RESEND_API_KEY`.
+2. **Settings > Domains** — add and verify a domain you control (adds a couple of
+   DNS records, SPF + DKIM, at wherever that domain's DNS lives — Namecheap, in
+   this project's case). `EMAIL_FROM` must be an address on that verified domain,
+   e.g. `RateMySeawolf <no-reply@seawolves.lol>`.
+3. Set both env vars in `.env` (local) and in Vercel's project settings
+   (production) — see "Deploying" below.
+
+Leave `RESEND_API_KEY` unset to keep the local-dev fallback: emails get logged to
+the server console instead of sent, so you can still develop and test the
+verification/reset flow without a Resend account.
+
+## Google sign-in
+
+NextAuth is configured with both a Credentials provider (email/password) and a
+Google provider, side by side — a user can sign up either way, and the same
+`ALLOWED_EMAIL_DOMAIN` restriction and admin-email logic (`src/lib/auth.ts`)
+applies to both. A couple of things are specific to the Google path:
+
+- **No password.** Google-only accounts have `hashedPassword: null` — they can't
+  use the Credentials login form or "forgot password" (there's nothing to reset).
+- **Skips email verification.** Google already proved the person controls that
+  inbox, so a Google sign-in sets `emailVerified` immediately — no confirmation
+  link, unlike the Credentials sign-up flow.
+- **First sign-in creates the account.** There's no separate "register with
+  Google" step; signing in with an allowed, not-yet-seen email creates the
+  `User` row on the spot.
+
+Setup, in [Google Cloud Console](https://console.cloud.google.com):
+
+1. **APIs & Services > OAuth consent screen** — configure it (External user type
+   is fine for a school-facing app; internal only works if everyone is on the
+   same Google Workspace).
+2. **APIs & Services > Credentials > Create Credentials > OAuth client ID**,
+   type **Web application**. Add an **Authorized redirect URI** for every
+   environment that needs one:
+   - `http://localhost:3000/api/auth/callback/google` (local dev)
+   - `https://www.seawolves.lol/api/auth/callback/google` (production)
+3. Copy the generated **Client ID** and **Client Secret** into
+   `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — locally in `.env`, in
+   production via Vercel's project settings.
+
+Without these set, the Credentials form still works; only the "Continue with
+Google" button errors if clicked.
 
 ## Managing the roster
 

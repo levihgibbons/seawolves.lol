@@ -5,15 +5,21 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const oauthError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    oauthError
+      ? "That Google account can't sign in here — it may not be on an allowed domain, or the account is suspended."
+      : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function submit(e: FormEvent) {
@@ -37,6 +43,12 @@ function LoginForm() {
       <h1 className="text-2xl font-bold text-gray-900">Sign in</h1>
       <p className="mt-1 text-sm text-gray-600">Welcome back.</p>
       <Card className="mt-6 p-6">
+        <GoogleSignInButton callbackUrl={callbackUrl} />
+        <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
+          <div className="h-px flex-1 bg-gray-200" />
+          or
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>

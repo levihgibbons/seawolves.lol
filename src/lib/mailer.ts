@@ -1,14 +1,13 @@
-// STUB email transport.
+// Email transport: Resend when RESEND_API_KEY is set, otherwise falls back
+// to logging the message (including the clickable link) to the server
+// console — so local dev works with zero setup, and production sends real
+// mail once the env vars below are configured.
 //
-// No real email provider (Resend, Postmark, SES, ...) is wired up. Instead
-// of sending mail, every function here logs the message — including the
-// clickable link — to the server console. This is enough to develop and
-// demo the full verification / password-reset flow locally.
-//
-// Before launch: implement `deliver()` using a real provider's SDK/API,
-// gated on RESEND_API_KEY (or equivalent) being set. Everything that calls
-// sendVerificationEmail / sendPasswordResetEmail elsewhere in the app can
-// stay unchanged.
+// EMAIL_FROM must be on a domain verified with Resend (Settings > Domains
+// in their dashboard, which asks for a few DNS records — SPF/DKIM — to add
+// wherever the domain's DNS lives).
+
+import { Resend } from "resend";
 
 type Mail = {
   to: string;
@@ -17,10 +16,26 @@ type Mail = {
 };
 
 async function deliver(mail: Mail): Promise<void> {
-  const divider = "=".repeat(60);
-  console.log(
-    `\n${divider}\n[dev email stub] would send email\nTo: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.body}\n${divider}\n`
-  );
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    const divider = "=".repeat(60);
+    console.log(
+      `\n${divider}\n[dev email stub] would send email\nTo: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.body}\n${divider}\n`
+    );
+    return;
+  }
+
+  const resend = new Resend(apiKey);
+  const from = process.env.EMAIL_FROM ?? "RateMySeawolf <onboarding@resend.dev>";
+  const { error } = await resend.emails.send({
+    from,
+    to: mail.to,
+    subject: mail.subject,
+    text: mail.body,
+  });
+  if (error) {
+    throw new Error(`Failed to send email via Resend: ${error.message}`);
+  }
 }
 
 export async function sendVerificationEmail(to: string, verifyUrl: string) {

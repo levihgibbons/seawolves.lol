@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -58,6 +59,12 @@ export default function SignupPage() {
       <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
       <p className="mt-1 text-sm text-gray-600">Join the conversation on RateMySeawolf.</p>
       <Card className="mt-6 p-6">
+        <GoogleSignInButton callbackUrl="/" />
+        <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
+          <div className="h-px flex-1 bg-gray-200" />
+          or
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="name">Name (optional, never shown publicly)</Label>
