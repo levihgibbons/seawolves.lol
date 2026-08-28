@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+
+  --color-navy: #003260;
+  --color-navy-dark: #001f3f;
+  --color-navy-light: #0d4a80;
+  --color-steel: #4a7fa7;
+  --color-steel-light: #eaf1f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--color-navy);
+  --color-navy-dark: var(--color-navy-dark);
+  --color-navy-light: var(--color-navy-light);
+  --color-steel: var(--color-steel);
+  --color-steel-light: var(--color-steel-light);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* A restrained nautical divider used sparingly (homepage hero, footer). */
+.wave-divider {
+  height: 10px;
+  background-image: linear-gradient(135deg, var(--color-steel) 25%, transparent 25%),
+    linear-gradient(225deg, var(--color-steel) 25%, transparent 25%);
+  background-position: 0 0;
+  background-size: 12px 10px;
+  opacity: 0.35;
+}

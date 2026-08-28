@@ -1,0 +1,143 @@
+// Prisma schema for RateMySeawolf.
+//
+// Runs against Supabase Postgres. Status/role/type fields are plain
+// `String` columns with allowed values enforced in the app layer (see
+// src/lib/constants.ts) rather than a DB-level enum — a holdover from when
+// local dev used SQLite (no native enum support there), kept for
+// simplicity now that both environments are Postgres.
+//
+// `directUrl` is a non-pooled connection used only for migrations;
+// `url` is the app's runtime connection (see .env for which is which and
+// why). Row Level Security is enabled on every table via migration
+// 20260828190000_enable_rls — see that file's comment for why it matters
+// even though the app talks to Postgres only through this Prisma
+// connection, never through Supabase's auto-generated REST/GraphQL API.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                       String    @id @default(cuid())
+  email                    String    @unique
+  hashedPassword           String
+  name                     String?
+  role                     String    @default("STUDENT") // STUDENT | ADMIN
+  status                   String    @default("ACTIVE") // ACTIVE | SUSPENDED | BANNED
+  emailVerified            DateTime?
+  verificationToken        String?   @unique
+  verificationTokenExpiry  DateTime?
+  resetToken               String?   @unique
+  resetTokenExpiry         DateTime?
+  createdAt                DateTime  @default(now())
+
+  reviews      Review[]
+  comments     Comment[]
+  helpfulVotes HelpfulVote[]
+  flagsFiled   Flag[]        @relation("FlagsFiled")
+
+  @@index([email])
+}
+
+model Teacher {
+  id         String   @id @default(cuid())
+  name       String
+  department String
+  photoUrl   String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reviews  Review[]
+  comments Comment[]
+
+  @@index([active])
+}
+
+model Review {
+  id              String   @id @default(cuid())
+  teacherId       String
+  userId          String
+  clarity         Int
+  fairness        Int
+  workload        Int
+  approachability Int
+  comment         String
+  status          String   @default("VISIBLE") // VISIBLE | REMOVED
+  autoFlagged     Boolean  @default(false)
+  autoFlagReason  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  teacher      Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  helpfulVotes HelpfulVote[]
+  flags        Flag[]
+
+  @@unique([teacherId, userId])
+  @@index([teacherId])
+  @@index([userId])
+  @@index([status])
+}
+
+model HelpfulVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([userId])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  teacherId   String
+  userId      String
+  parentId    String?
+  body        String
+  status      String   @default("VISIBLE") // VISIBLE | REMOVED
+  autoFlagged Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  teacher Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+  flags   Flag[]
+
+  @@index([teacherId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([status])
+}
+
+model Flag {
+  id         String    @id @default(cuid())
+  type       String // REVIEW | COMMENT
+  reviewId   String?
+  commentId  String?
+  reporterId String
+  reason     String
+  status     String    @default("PENDING") // PENDING | RESOLVED | DISMISSED
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  review   Review?  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  comment  Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporter User     @relation("FlagsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([commentId])
+  @@index([reporterId])
+  @@index([status])
+}
