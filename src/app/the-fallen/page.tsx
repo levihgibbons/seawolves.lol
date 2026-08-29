@@ -23,11 +23,10 @@ export default async function TheFallenPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
       <div className="text-center">
-        <p className="text-4xl">🪦</p>
-        <h1 className="mt-3 text-2xl font-bold text-gray-900">The Fallen</h1>
+        <h1 className="text-2xl font-bold text-gray-900">The Fallen</h1>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-gray-600">
-          Rest in memes 🕊️ — teachers and staff who&apos;ve left Pacifica, whether they moved on,
-          retired, or got the boot. Nothing here disappears — every review lives on forever.
+          Teachers and staff who&apos;ve left Pacifica, whether they moved on, retired, or got let
+          go. Nothing here disappears — every review lives on forever.
         </p>
       </div>
 

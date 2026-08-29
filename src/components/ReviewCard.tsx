@@ -41,6 +41,7 @@ export function ReviewCard({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const overall = reviewOverall(review);
+  const isFaculty = categories.includes("workload");
 
   if (editing) {
     return (
@@ -50,6 +51,7 @@ export function ReviewCard({
         teacherId={teacherId}
         teacherName={teacherName}
         categories={categories}
+        isFaculty={isFaculty}
         initial={{
           ratings: {
             clarity: review.clarity,

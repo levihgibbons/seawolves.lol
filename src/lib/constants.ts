@@ -32,12 +32,36 @@ export const RATING_CATEGORY_LABELS: Record<RatingCategory, string> = {
   approachability: "Approachability",
 };
 
+// Faculty-flavored phrasing — assumes the person teaches a class, grades
+// work, and assigns homework.
 export const RATING_CATEGORY_HELP: Record<RatingCategory, string> = {
   clarity: "Explains material in a way that's easy to follow",
   fairness: "Grades and treats students consistently and fairly",
   workload: "Homework and assessment load relative to the course",
   approachability: "Easy to ask questions of, in and out of class",
 };
+
+// Non-faculty staff (Teacher.isFaculty === false) don't teach a class or
+// grade anything, so the faculty phrasing above breaks down for them (e.g.
+// "Grades and treats students..." for the Director of Finance). Same
+// underlying categories, reworded to fit an admin/support role instead —
+// "workload" doesn't apply at all and is dropped by
+// applicableRatingCategories() below.
+export const STAFF_RATING_CATEGORY_HELP: Record<
+  Exclude<RatingCategory, "workload">,
+  string
+> = {
+  clarity: "Communicates clearly — you know what's going on and what to expect",
+  fairness: "Treats students consistently and fairly",
+  approachability: "Easy to go to with a question or a problem",
+};
+
+export function ratingCategoryHelp(category: RatingCategory, isFaculty: boolean): string {
+  if (!isFaculty && category !== "workload") {
+    return STAFF_RATING_CATEGORY_HELP[category];
+  }
+  return RATING_CATEGORY_HELP[category];
+}
 
 // Non-faculty staff (Teacher.isFaculty === false) don't assign homework, so
 // "workload" doesn't apply to them — everything else (clarity of

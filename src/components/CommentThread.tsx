@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatRelativeTime } from "@/lib/format";
@@ -158,11 +159,16 @@ export function CommentThread({
   teacherId,
   comments,
   isSignedIn,
+  needsUsername,
   closed,
 }: {
   teacherId: string;
   comments: CommentNode[];
   isSignedIn: boolean;
+  // True when signed in but hasn't picked a username yet — posting is
+  // blocked server-side either way, but this shows why instead of letting
+  // them hit an error on submit.
+  needsUsername?: boolean;
   // True once the teacher has left Pacifica — history stays visible but no
   // new comments/replies are accepted (matches the API's own check).
   closed?: boolean;
@@ -173,13 +179,20 @@ export function CommentThread({
         <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
           This discussion is closed — the person it&apos;s about has left Pacifica.
         </p>
+      ) : needsUsername ? (
+        <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+          <Link href="/choose-username" className="font-medium text-navy hover:underline">
+            Pick a username
+          </Link>{" "}
+          to join the discussion.
+        </p>
       ) : isSignedIn ? (
         <CommentComposer teacherId={teacherId} />
       ) : (
         <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-          <a href="/login" className="font-medium text-navy hover:underline">
+          <Link href="/login" className="font-medium text-navy hover:underline">
             Sign in
-          </a>{" "}
+          </Link>{" "}
           to join the discussion.
         </p>
       )}

@@ -185,7 +185,7 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
         <div>
           <p className="flex flex-wrap items-center gap-1.5 font-medium text-gray-900">
             {teacher.name}
-            {!teacher.active && <Badge tone="neutral">🪦 The Fallen</Badge>}
+            {!teacher.active && <Badge tone="neutral">The Fallen</Badge>}
             {!teacher.isFaculty && <Badge tone="neutral">Staff</Badge>}
           </p>
           <p className="text-sm text-gray-500">

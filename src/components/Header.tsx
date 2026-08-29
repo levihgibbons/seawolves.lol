@@ -61,6 +61,17 @@ export async function Header() {
           )}
         </div>
       </div>
+
+      {session?.user && !session.user.username && (
+        <div className="border-t border-navy-dark bg-navy-light/40">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm text-white/90 sm:px-6">
+            <span>Pick a username to post reviews and comments under.</span>
+            <Link href="/choose-username" className="font-medium text-white underline hover:no-underline">
+              Choose username
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

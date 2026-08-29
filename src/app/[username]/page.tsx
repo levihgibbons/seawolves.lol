@@ -53,7 +53,7 @@ export default async function ProfilePage({
             {user.bio ? (
               <p className="mt-2 whitespace-pre-line text-sm text-gray-700">{user.bio}</p>
             ) : (
-              <p className="mt-2 text-sm text-gray-400">No bio yet — mysterious 👀</p>
+              <p className="mt-2 text-sm text-gray-400">No bio yet.</p>
             )}
           </div>
         </div>

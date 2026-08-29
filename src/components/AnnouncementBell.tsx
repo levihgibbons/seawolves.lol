@@ -79,7 +79,7 @@ export function AnnouncementBell({ announcements }: { announcements: Announcemen
       {open && (
         <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 bg-white py-1 text-sm text-gray-700 shadow-lg sm:w-80">
           <div className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Announcements 📣
+            Announcements
           </div>
           <div className="max-h-80 overflow-y-auto">
             {announcements.length === 0 ? (

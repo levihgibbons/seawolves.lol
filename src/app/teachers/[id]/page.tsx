@@ -106,7 +106,7 @@ export default async function TeacherProfilePage({
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold text-gray-900">{teacher.name}</h1>
-            {!teacher.active && <Badge tone="neutral">🪦 The Fallen</Badge>}
+            {!teacher.active && <Badge tone="neutral">The Fallen</Badge>}
             {teacher.active && !teacher.isFaculty && <Badge tone="neutral">Staff</Badge>}
           </div>
           <p className="text-gray-600">{teacher.department}</p>
@@ -151,6 +151,13 @@ export default async function TeacherProfilePage({
             </Link>
             .
           </Card>
+        ) : !session.user.username ? (
+          <Card className="p-4 text-sm text-gray-600">
+            <Link href="/choose-username" className="font-medium text-navy hover:underline">
+              Pick a username
+            </Link>{" "}
+            before posting a review for {teacher.name}.
+          </Card>
         ) : myReview ? (
           <p className="text-sm text-gray-500">
             You&apos;ve already reviewed {teacher.name} — find it below to edit or delete it.
@@ -161,6 +168,7 @@ export default async function TeacherProfilePage({
             teacherId={teacher.id}
             teacherName={teacher.name}
             categories={categories}
+            isFaculty={teacher.isFaculty}
           />
         )}
       </div>
@@ -208,10 +216,17 @@ export default async function TeacherProfilePage({
       <div className="mt-7 border-t border-gray-200 pt-6">
         <h2 className="text-lg font-semibold text-gray-900">Discussion</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Lightweight Q&amp;A — separate from formal reviews. Keep it about the class.
+          Lightweight Q&amp;A — separate from formal reviews. Keep it about{" "}
+          {teacher.isFaculty ? "the class" : "their role"}, not the person.
         </p>
         <div className="mt-4">
-          <CommentThread teacherId={teacher.id} comments={comments} isSignedIn={!!session?.user} />
+          <CommentThread
+            teacherId={teacher.id}
+            comments={comments}
+            isSignedIn={!!session?.user}
+            needsUsername={!!session?.user && !session.user.username}
+            closed={!teacher.active}
+          />
         </div>
       </div>
     </div>

@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
   RATING_CATEGORIES,
-  RATING_CATEGORY_HELP,
   RATING_CATEGORY_LABELS,
   MIN_REVIEW_COMMENT_LENGTH,
+  ratingCategoryHelp,
   type RatingCategory,
 } from "@/lib/constants";
 import { StarRatingInput } from "./StarRating";
@@ -22,6 +22,7 @@ export function ReviewForm({
   initial,
   onDone,
   categories = RATING_CATEGORIES,
+  isFaculty = true,
 }: {
   teacherId: string;
   teacherName: string;
@@ -32,6 +33,9 @@ export function ReviewForm({
   // Which rating categories to collect — excludes "workload" for
   // non-faculty staff. See applicableRatingCategories() in constants.ts.
   categories?: readonly RatingCategory[];
+  // Picks faculty- vs. staff-flavored category descriptions and copy —
+  // see ratingCategoryHelp() in constants.ts.
+  isFaculty?: boolean;
 }) {
   const router = useRouter();
   const [ratings, setRatings] = useState<Ratings>(
@@ -48,7 +52,7 @@ export function ReviewForm({
     e.preventDefault();
     setError(null);
     if (!allRated) {
-      setError("Please rate all four categories.");
+      setError(`Please rate all ${categories.length} categories.`);
       return;
     }
     if (commentTooShort) {
@@ -89,7 +93,7 @@ export function ReviewForm({
                   {RATING_CATEGORY_LABELS[category]}
                 </span>
               </div>
-              <p className="text-xs text-gray-500">{RATING_CATEGORY_HELP[category]}</p>
+              <p className="text-xs text-gray-500">{ratingCategoryHelp(category, isFaculty)}</p>
               <div className="mt-1.5">
                 <StarRatingInput
                   label={RATING_CATEGORY_LABELS[category]}
@@ -107,7 +111,11 @@ export function ReviewForm({
             rows={5}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Focus on teaching quality: how they explain material, grading, workload, and how approachable they are. Keep it about the class, not the person."
+            placeholder={
+              isFaculty
+                ? "Focus on teaching quality: how they explain material, grading, workload, and how approachable they are. Keep it about the class, not the person."
+                : "Focus on how they do their job: communication, fairness, and how approachable they are. Keep it about their role, not the person."
+            }
           />
           <p className="mt-1 text-xs text-gray-400">
             {comment.trim().length}/{MIN_REVIEW_COMMENT_LENGTH} minimum characters
