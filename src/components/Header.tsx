@@ -50,7 +50,6 @@ export async function Header() {
               name={session.user.username ?? session.user.name ?? session.user.email ?? "Account"}
               email={session.user.email ?? ""}
               isAdmin={session.user.role === "ADMIN"}
-              username={session.user.username}
             />
           ) : (
             <Link

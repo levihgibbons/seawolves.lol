@@ -52,14 +52,6 @@ export default async function AccountPage() {
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge tone="green">Email verified</Badge>
               {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
-              {session.user.username && (
-                <Link
-                  href={`/${session.user.username}`}
-                  className="text-xs font-medium text-navy hover:underline"
-                >
-                  View public profile →
-                </Link>
-              )}
             </div>
             {me?.bio ? (
               <p className="mt-3 whitespace-pre-line text-sm text-gray-700">{me.bio}</p>
