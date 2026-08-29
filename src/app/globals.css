@@ -28,17 +28,10 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Nautical candy-stripe divider above the footer — a solid diagonal
-   navy/steel band, like a lifebuoy ring or signal flag trim. */
-.stripe-divider {
-  height: 8px;
-  background-image: repeating-linear-gradient(
-    45deg,
-    var(--color-navy) 0,
-    var(--color-navy) 10px,
-    var(--color-steel) 10px,
-    var(--color-steel) 20px
-  );
+/* Solid navy band above the footer. */
+.footer-divider {
+  height: 4px;
+  background-color: var(--color-navy);
 }
 
 html {
