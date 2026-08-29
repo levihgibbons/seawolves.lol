@@ -1,4 +1,4 @@
-# RateMySeawolf — Teacher Review Platform for Pacifica Christian High School
+# seawolves.lol — Teacher Review Platform for Pacifica Christian High School
 
 ## Execution instructions
 Build this entire project end-to-end in one continuous session. Do NOT stop
@@ -9,7 +9,7 @@ app described below is built, seeded, and runnable. Only stop early if you
 hit a hard blocker (e.g. a missing credential you cannot proceed without).
 
 ## Overview
-Build "RateMySeawolf," a professional teacher-review web app for Pacifica
+Build "seawolves.lol," a professional teacher-review web app for Pacifica
 Christian High School (Santa Monica, CA), modeled functionally on
 RateMyProfessors.com. This is an approved school project with sign-off from
 the Head of School and consent from listed faculty — not an anonymous attack
