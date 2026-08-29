@@ -32,6 +32,7 @@ export const forgotPasswordSchema = z.object({
 const RESERVED_USERNAMES = new Set([
   "account",
   "admin",
+  "announcements",
   "api",
   "choose-username",
   "forgot-password",
@@ -102,6 +103,7 @@ export const flagSchema = z.object({
 export const profileSchema = z.object({
   bio: z.string().trim().max(280, "Bio must be at most 280 characters.").optional(),
   image: z.string().trim().url("Enter a valid image URL.").optional().or(z.literal("")),
+  username: usernameSchema.optional(),
 });
 
 export const announcementSchema = z.object({

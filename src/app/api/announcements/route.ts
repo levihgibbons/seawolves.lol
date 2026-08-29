@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { announcementSchema } from "@/lib/validation";
 import { requireAdmin, handleApiError, ApiError } from "@/lib/apiAuth";
 
-// Public — powers the bell icon in the header (see
-// src/components/AnnouncementBell.tsx). No auth required to read.
+// Public — powers the notification bell in the header (see
+// src/components/NotificationBell.tsx) and the /announcements archive page.
+// No auth required to read.
 export async function GET() {
   const announcements = await prisma.announcement.findMany({
     orderBy: { createdAt: "desc" },

@@ -3,12 +3,13 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserMenu } from "./UserMenu";
-import { AnnouncementBell } from "./AnnouncementBell";
+import { NotificationBell } from "./NotificationBell";
 
 const NAV_LINKS = [
   { href: "/teachers", label: "Roster" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/the-fallen", label: "The Fallen" },
+  { href: "/announcements", label: "Announcements" },
 ];
 
 export async function Header() {
@@ -36,8 +37,8 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <AnnouncementBell
-            announcements={announcements.map((a) => ({
+          <NotificationBell
+            notifications={announcements.map((a) => ({
               id: a.id,
               title: a.title,
               body: a.body,

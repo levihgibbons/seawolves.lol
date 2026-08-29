@@ -31,6 +31,7 @@ model User {
   username                 String?   @unique // display identity in reviews/comments; null until the user completes signup/onboarding
   bio                      String? // shown on the user's public /[username] profile page
   image                    String? // avatar URL for the public profile; falls back to initials (see Avatar.tsx) when unset
+  usernameChangedAt        DateTime? // last time the user changed their username via /account; gates the 30-day cooldown (see src/lib/username.ts). Null = never changed, free to change immediately.
   role                     String    @default("STUDENT") // STUDENT | ADMIN
   status                   String    @default("ACTIVE") // ACTIVE | SUSPENDED | BANNED
   emailVerified            DateTime?

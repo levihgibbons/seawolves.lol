@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatRelativeTime } from "@/lib/format";
 
-export type AnnouncementItem = {
+export type NotificationItem = {
   id: string;
   title: string;
   body: string;
@@ -12,12 +13,15 @@ export type AnnouncementItem = {
 
 const SEEN_KEY = "seawolves:lastSeenAnnouncementAt";
 
-export function AnnouncementBell({ announcements }: { announcements: AnnouncementItem[] }) {
+// The bell surfaces new site-wide announcements (see /announcements and
+// src/app/admin/announcements) as notifications — it's the alert, the
+// /announcements page is the archive.
+export function NotificationBell({ notifications }: { notifications: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const latest = announcements[0]?.createdAt;
+  const latest = notifications[0]?.createdAt;
 
   useEffect(() => {
     if (!latest) return;
@@ -59,7 +63,7 @@ export function AnnouncementBell({ announcements }: { announcements: Announcemen
       <button
         type="button"
         onClick={toggle}
-        aria-label="Announcements"
+        aria-label="Notifications"
         className="relative flex h-8 w-8 items-center justify-center rounded-md text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         <svg viewBox="0 0 20 20" className="h-5 w-5 fill-none stroke-current">
@@ -79,22 +83,31 @@ export function AnnouncementBell({ announcements }: { announcements: Announcemen
       {open && (
         <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 bg-white py-1 text-sm text-gray-700 shadow-lg sm:w-80">
           <div className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Announcements
+            Notifications
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {announcements.length === 0 ? (
+            {notifications.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-gray-400">Nothing yet — quiet out here.</p>
             ) : (
-              announcements.map((a) => (
-                <div key={a.id} className="border-b border-gray-50 px-3 py-2.5 last:border-0">
-                  <p className="font-medium text-gray-900">{a.title}</p>
-                  <p className="mt-0.5 whitespace-pre-line text-xs text-gray-600">{a.body}</p>
+              notifications.map((n) => (
+                <div key={n.id} className="border-b border-gray-50 px-3 py-2.5 last:border-0">
+                  <p className="font-medium text-gray-900">{n.title}</p>
+                  <p className="mt-0.5 whitespace-pre-line text-xs text-gray-600">{n.body}</p>
                   <p className="mt-1 text-[11px] text-gray-400">
-                    {formatRelativeTime(new Date(a.createdAt))}
+                    {formatRelativeTime(new Date(n.createdAt))}
                   </p>
                 </div>
               ))
             )}
+          </div>
+          <div className="border-t border-gray-100 px-3 py-2 text-center">
+            <Link
+              href="/announcements"
+              className="text-xs font-medium text-navy hover:underline"
+              onClick={() => setOpen(false)}
+            >
+              View all announcements
+            </Link>
           </div>
         </div>
       )}

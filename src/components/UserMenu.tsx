@@ -42,7 +42,7 @@ export function UserMenu({
         <div className="absolute right-0 z-20 mt-2 w-52 rounded-md border border-gray-200 bg-white py-1 text-sm text-gray-700 shadow-lg">
           <div className="border-b border-gray-100 px-3 py-2 text-xs text-gray-500">{email}</div>
           <Link href="/account" className="block px-3 py-2 hover:bg-gray-50" onClick={() => setOpen(false)}>
-            My reviews
+            My profile
           </Link>
           {username && (
             <Link
@@ -50,7 +50,7 @@ export function UserMenu({
               className="block px-3 py-2 hover:bg-gray-50"
               onClick={() => setOpen(false)}
             >
-              My profile
+              Public profile
             </Link>
           )}
           {isAdmin && (

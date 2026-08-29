@@ -8,8 +8,9 @@ import { StarRatingDisplay } from "@/components/StarRating";
 import { ProfileEditForm } from "@/components/ProfileEditForm";
 import { formatRelativeTime } from "@/lib/format";
 import { reviewOverall } from "@/lib/ratings";
+import { usernameChangeAvailableAt } from "@/lib/username";
 
-export const metadata = { title: "My Account" };
+export const metadata = { title: "My Profile" };
 
 export default async function AccountPage() {
   const session = await auth();
@@ -17,8 +18,13 @@ export default async function AccountPage() {
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { bio: true, image: true },
+    select: { bio: true, image: true, createdAt: true, usernameChangedAt: true },
   });
+
+  const joined = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(
+    me?.createdAt ?? new Date()
+  );
+  const usernameAvailableAt = usernameChangeAvailableAt(me?.usernameChangedAt ?? null);
 
   const reviews = await prisma.review.findMany({
     where: { userId: session.user.id },
@@ -34,14 +40,15 @@ export default async function AccountPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <h1 className="text-2xl font-bold text-gray-900">My account</h1>
+      <h1 className="text-2xl font-bold text-gray-900">My profile</h1>
 
-      <Card className="mt-4 p-4">
-        <div className="flex items-start gap-3">
-          <Avatar name={session.user.username ?? "?"} photoUrl={me?.image} size="md" />
+      <Card className="relative mt-4 p-5">
+        <div className="flex items-start gap-4">
+          <Avatar name={session.user.username ?? "?"} photoUrl={me?.image} size="lg" />
           <div className="min-w-0 flex-1">
-            <p className="font-medium text-gray-900">{session.user.username}</p>
+            <p className="text-lg font-bold text-gray-900">{session.user.username}</p>
             <p className="text-sm text-gray-600">{session.user.email}</p>
+            <p className="mt-0.5 text-xs text-gray-400">Seawolf since {joined}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge tone="green">Email verified</Badge>
               {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
@@ -54,6 +61,11 @@ export default async function AccountPage() {
                 </Link>
               )}
             </div>
+            {me?.bio ? (
+              <p className="mt-3 whitespace-pre-line text-sm text-gray-700">{me.bio}</p>
+            ) : (
+              <p className="mt-3 text-sm text-gray-400">No bio yet.</p>
+            )}
           </div>
         </div>
         {session.user.username && (
@@ -61,6 +73,7 @@ export default async function AccountPage() {
             username={session.user.username}
             initialBio={me?.bio ?? ""}
             initialImage={me?.image ?? ""}
+            usernameChangeAvailableAt={usernameAvailableAt?.toISOString() ?? null}
           />
         )}
       </Card>
