@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { USER_STATUSES, type UserStatus } from "@/lib/constants";
@@ -30,6 +31,7 @@ export function AdminUserRow({
   const [loading, setLoading] = useState<UserStatus | null>(null);
 
   async function setStatus(next: UserStatus) {
+    if (next === "BANNED" && !confirm("Ban this account? They will not be able to sign in.")) return;
     setLoading(next);
     await fetch(`/api/admin/users/${id}`, {
       method: "PATCH",
@@ -51,9 +53,12 @@ export function AdminUserRow({
         <Badge tone={STATUS_TONE[status]}>{status}</Badge>
       </td>
       <td className="px-4 py-2">
-        {!isSelf && (
-          <div className="flex flex-wrap gap-1.5">
-            {USER_STATUSES.filter((s) => s !== status).map((s) => (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Link href={`/admin/users/${id}`} className="text-xs font-medium text-navy hover:underline">
+            View
+          </Link>
+          {!isSelf &&
+            USER_STATUSES.filter((s) => s !== status).map((s) => (
               <Button
                 key={s}
                 variant={s === "ACTIVE" ? "secondary" : "outline"}
@@ -64,8 +69,7 @@ export function AdminUserRow({
                 {loading === s ? "..." : s === "ACTIVE" ? "Reactivate" : s === "SUSPENDED" ? "Suspend" : "Ban"}
               </Button>
             ))}
-          </div>
-        )}
+        </div>
       </td>
     </tr>
   );

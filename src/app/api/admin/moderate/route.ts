@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, handleApiError, ApiError } from "@/lib/apiAuth";
+import { logAdminAction } from "@/lib/auditLog";
 
 const moderateSchema = z.object({
   source: z.enum(["report", "auto"]),
@@ -13,7 +14,7 @@ const moderateSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
     const body = await request.json().catch(() => null);
     const parsed = moderateSchema.safeParse(body);
     if (!parsed.success) {
@@ -27,6 +28,21 @@ export async function POST(request: Request) {
       } else {
         await prisma.comment.update({ where: { id: targetId }, data: { status: "REMOVED" } });
       }
+      await logAdminAction({
+        adminId: admin.id,
+        action: targetType === "REVIEW" ? "REMOVE_REVIEW" : "REMOVE_COMMENT",
+        targetType,
+        targetId,
+        detail: source === "report" ? "From a user report" : "Auto-flagged content",
+      });
+    } else {
+      await logAdminAction({
+        adminId: admin.id,
+        action: "DISMISS_REPORT",
+        targetType,
+        targetId,
+        detail: source === "report" ? "Report dismissed" : "Auto-flag cleared",
+      });
     }
 
     if (source === "report") {

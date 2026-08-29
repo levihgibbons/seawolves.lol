@@ -46,6 +46,7 @@ model User {
   helpfulVotes  HelpfulVote[]
   flagsFiled    Flag[]        @relation("FlagsFiled")
   announcements Announcement[]
+  adminActions  AdminAction[] @relation("AdminActor")
 
   @@index([email])
 }
@@ -151,6 +152,29 @@ model Flag {
   @@index([commentId])
   @@index([reporterId])
   @@index([status])
+}
+
+// Accountability trail for admin actions — several admins can moderate
+// this site, so "who removed this review / banned this account / promoted
+// this user" needs to be answerable after the fact. Written by
+// src/lib/auditLog.ts from every mutating admin route. `targetId` is left
+// nullable for actions with no natural single target; `detail` is a short
+// human-readable snapshot (e.g. a teacher name or email) captured at write
+// time so the log stays readable even if the target is later deleted.
+model AdminAction {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String // e.g. REMOVE_REVIEW, DISMISS_REPORT, SUSPEND_USER, BAN_USER, REACTIVATE_USER, PROMOTE_ADMIN, DEMOTE_ADMIN, CREATE_TEACHER, UPDATE_TEACHER, DEACTIVATE_TEACHER, REACTIVATE_TEACHER, POST_ANNOUNCEMENT, DELETE_ANNOUNCEMENT
+  targetType String // REVIEW | COMMENT | USER | TEACHER | ANNOUNCEMENT
+  targetId   String?
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation("AdminActor", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([targetType, targetId])
 }
 
 // Site-wide announcements, shown via the bell icon in the header (see

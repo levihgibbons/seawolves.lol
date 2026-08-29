@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { announcementSchema } from "@/lib/validation";
 import { requireAdmin, handleApiError, ApiError } from "@/lib/apiAuth";
+import { logAdminAction } from "@/lib/auditLog";
 
 // Public — powers the notification bell in the header (see
 // src/components/NotificationBell.tsx) and the /announcements archive page.
@@ -26,6 +27,14 @@ export async function POST(request: Request) {
 
     const announcement = await prisma.announcement.create({
       data: { title: parsed.data.title, body: parsed.data.body, authorId: admin.id },
+    });
+
+    await logAdminAction({
+      adminId: admin.id,
+      action: "POST_ANNOUNCEMENT",
+      targetType: "ANNOUNCEMENT",
+      targetId: announcement.id,
+      detail: announcement.title,
     });
 
     return NextResponse.json({ ok: true, announcement });

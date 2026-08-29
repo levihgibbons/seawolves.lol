@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Card, Badge } from "@/components/ui";
+import { Card, Badge, Button } from "@/components/ui";
 import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { ProfileEditForm } from "@/components/ProfileEditForm";
@@ -60,6 +60,16 @@ export default async function AccountPage() {
             )}
           </div>
         </div>
+        {session.user.role === "ADMIN" && (
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-md border border-steel-light bg-steel-light/20 px-3 py-2.5">
+            <p className="text-sm text-navy">You have admin access on this site.</p>
+            <Link href="/admin">
+              <Button variant="secondary" className="text-xs">
+                Go to admin dashboard
+              </Button>
+            </Link>
+          </div>
+        )}
         {session.user.username && (
           <ProfileEditForm
             username={session.user.username}
