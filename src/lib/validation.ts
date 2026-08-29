@@ -100,9 +100,20 @@ export const flagSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
+// Profile pictures are uploaded as a file (see src/lib/image.ts) and stored
+// as a base64 JPEG data URL — not an arbitrary URL. 1.5MB comfortably fits
+// a 320px avatar re-encoded at quality 0.85, with headroom.
+const MAX_AVATAR_DATA_URL_LENGTH = 1_500_000;
+const AVATAR_DATA_URL_PATTERN = /^data:image\/(png|jpe?g|webp|gif);base64,/;
+
 export const profileSchema = z.object({
   bio: z.string().trim().max(280, "Bio must be at most 280 characters.").optional(),
-  image: z.string().trim().url("Enter a valid image URL.").optional().or(z.literal("")),
+  image: z
+    .string()
+    .trim()
+    .max(MAX_AVATAR_DATA_URL_LENGTH, "That image is too large.")
+    .refine((v) => v === "" || AVATAR_DATA_URL_PATTERN.test(v), "Invalid image.")
+    .optional(),
   username: usernameSchema.optional(),
 });
 

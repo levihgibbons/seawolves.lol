@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Avatar } from "./Avatar";
 import { Button, Textarea, Input, Label, ErrorText, Card } from "./ui";
+import { fileToAvatarDataUrl } from "@/lib/image";
 
 function PencilIcon() {
   return (
@@ -15,6 +16,19 @@ function PencilIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-none stroke-current">
+      <path
+        d="M3 7a1.5 1.5 0 011.5-1.5h1l.7-1.2a1 1 0 01.86-.5h3.88a1 1 0 01.86.5l.7 1.2h1A1.5 1.5 0 0115 7v6.5A1.5 1.5 0 0113.5 15h-9A1.5 1.5 0 013 13.5V7z"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="10" r="2.3" strokeWidth="1.3" />
     </svg>
   );
 }
@@ -34,12 +48,14 @@ export function ProfileEditForm({
 }) {
   const router = useRouter();
   const { update } = useSession();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [bio, setBio] = useState(initialBio);
   const [image, setImage] = useState(initialImage);
   const [newUsername, setNewUsername] = useState(username);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
 
   const cooldownActive = usernameChangeAvailableAt
     ? new Date(usernameChangeAvailableAt) > new Date()
@@ -56,6 +72,22 @@ export function ProfileEditForm({
     setNewUsername(username);
     setError(null);
     setEditing(true);
+  }
+
+  async function handlePhotoSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+
+    setError(null);
+    setProcessingPhoto(true);
+    try {
+      setImage(await fileToAvatarDataUrl(file));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't process that image.");
+    } finally {
+      setProcessingPhoto(false);
+    }
   }
 
   async function submit(e: FormEvent) {
@@ -103,16 +135,51 @@ export function ProfileEditForm({
     <Card className="mt-4 p-4">
       <form onSubmit={submit} className="space-y-4">
         <div className="flex items-center gap-3">
-          <Avatar name={newUsername || username} photoUrl={image || null} size="md" />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={processingPhoto}
+            aria-label="Change profile picture"
+            className="group relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+          >
+            <Avatar name={newUsername || username} photoUrl={image || null} size="md" />
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-white opacity-0 transition duration-150 group-hover:bg-black/40 group-hover:opacity-100">
+              <CameraIcon />
+            </span>
+            {processingPhoto && (
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 text-white">
+                <CameraIcon />
+              </span>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoSelect}
+            className="hidden"
+          />
           <div className="flex-1">
-            <Label htmlFor="profile-image">Avatar URL</Label>
-            <Input
-              id="profile-image"
-              type="url"
-              placeholder="https://..."
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-            />
+            <p className="text-sm font-medium text-gray-700">Profile picture</p>
+            <div className="mt-1 flex items-center gap-3 text-xs">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={processingPhoto}
+                className="font-medium text-navy hover:underline disabled:opacity-50"
+              >
+                {processingPhoto ? "Processing..." : "Choose photo"}
+              </button>
+              {image && (
+                <button
+                  type="button"
+                  onClick={() => setImage("")}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -150,7 +217,7 @@ export function ProfileEditForm({
         <ErrorText>{error}</ErrorText>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading} className="text-xs">
+          <Button type="submit" disabled={loading || processingPhoto} className="text-xs">
             {loading ? "Saving..." : "Save"}
           </Button>
           <Button type="button" variant="ghost" onClick={() => setEditing(false)} className="text-xs">
