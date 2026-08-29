@@ -28,14 +28,17 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* A restrained nautical divider used sparingly (homepage hero, footer). */
-.wave-divider {
-  height: 10px;
-  background-image: linear-gradient(135deg, var(--color-steel) 25%, transparent 25%),
-    linear-gradient(225deg, var(--color-steel) 25%, transparent 25%);
-  background-position: 0 0;
-  background-size: 12px 10px;
-  opacity: 0.35;
+/* Nautical candy-stripe divider above the footer — a solid diagonal
+   navy/steel band, like a lifebuoy ring or signal flag trim. */
+.stripe-divider {
+  height: 8px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-navy) 0,
+    var(--color-navy) 10px,
+    var(--color-steel) 10px,
+    var(--color-steel) 20px
+  );
 }
 
 html {
