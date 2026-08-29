@@ -91,7 +91,8 @@ export function ReviewCard({
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <HelpfulButton
-          reviewId={review.id}
+          endpoint={`/api/reviews/${review.id}/helpful`}
+          label="Helpful"
           initialCount={review.helpfulCount}
           initialVoted={review.viewerHasVoted}
           isSignedIn={isSignedIn}

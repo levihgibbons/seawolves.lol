@@ -7,9 +7,10 @@ import { RATING_CATEGORY_LABELS, applicableRatingCategories } from "@/lib/consta
 import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { RatingBar } from "@/components/RatingBar";
-import { ReviewForm } from "@/components/ReviewForm";
-import { ReviewCard, type ReviewCardData } from "@/components/ReviewCard";
-import { CommentThread, type CommentNode } from "@/components/CommentThread";
+import { DiscussionComposer } from "@/components/DiscussionComposer";
+import { type ReviewCardData } from "@/components/ReviewCard";
+import { type CommentNode } from "@/components/CommentThread";
+import { DiscussionFeed, type DiscussionItem } from "@/components/DiscussionFeed";
 import { Card, Badge } from "@/components/ui";
 
 export default async function TeacherProfilePage({
@@ -38,19 +39,13 @@ export default async function TeacherProfilePage({
       helpfulVotes: session?.user ? { where: { userId: session.user.id } } : false,
       _count: { select: { helpfulVotes: true } },
     },
-    orderBy: sort === "helpful" ? undefined : { createdAt: "desc" },
   });
-
-  const sortedReviews =
-    sort === "helpful"
-      ? [...reviews].sort((a, b) => b._count.helpfulVotes - a._count.helpfulVotes)
-      : reviews;
 
   const breakdown = computeRatingBreakdown(reviews);
 
   const myReview = session?.user ? reviews.find((r) => r.userId === session.user.id) : undefined;
 
-  const reviewCards: ReviewCardData[] = sortedReviews.map((r) => ({
+  const reviewCards: ReviewCardData[] = reviews.map((r) => ({
     id: r.id,
     createdAt: r.createdAt.toISOString(),
     clarity: r.clarity,
@@ -66,7 +61,11 @@ export default async function TeacherProfilePage({
 
   const rawComments = await prisma.comment.findMany({
     where: { teacherId: id, status: "VISIBLE" },
-    include: { user: { select: { username: true } } },
+    include: {
+      user: { select: { username: true } },
+      votes: session?.user ? { where: { userId: session.user.id } } : false,
+      _count: { select: { votes: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 
@@ -79,21 +78,37 @@ export default async function TeacherProfilePage({
       body: c.body,
       isOwn: session?.user ? c.userId === session.user.id : false,
       username: c.user.username,
+      helpfulCount: c._count.votes,
+      viewerHasVoted: session?.user ? c.votes.length > 0 : false,
       replies: [],
     });
   }
-  const topLevel: CommentNode[] = [];
+  const topLevelComments: CommentNode[] = [];
   for (const c of rawComments) {
     const node = nodeMap.get(c.id)!;
     if (c.parentId && byId.has(c.parentId)) {
       nodeMap.get(c.parentId)!.replies.push(node);
     } else {
-      topLevel.push(node);
+      topLevelComments.push(node);
     }
   }
-  const comments = topLevel.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+
+  // One combined, sortable feed instead of a separate "review" list and
+  // "comment" thread — see DiscussionFeed. Replies stay nested under their
+  // parent comment regardless of sort; only top-level items (reviews and
+  // top-level comments) get reordered.
+  const discussionItems: DiscussionItem[] = [
+    ...reviewCards.map((r): DiscussionItem => ({ type: "review", createdAt: r.createdAt, score: r.helpfulCount, data: r })),
+    ...topLevelComments.map((c): DiscussionItem => ({ type: "comment", createdAt: c.createdAt, score: c.helpfulCount, data: c })),
+  ].sort((a, b) => {
+    if (sort === "helpful" && b.score !== a.score) return b.score - a.score;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // Eligible to post right now — signed in, verified, has a username, and
+  // the teacher hasn't left Pacifica. Drives both whether the composer
+  // shows and whether Reply is offered on individual comments.
+  const canPost = teacher.active && !!session?.user && !!session.user.emailVerified && !!session.user.username;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -130,54 +145,9 @@ export default async function TeacherProfilePage({
         ))}
       </Card>
 
-      <div className="mt-5">
-        {!teacher.active ? (
-          <Card className="p-4 text-sm text-gray-600">
-            {teacher.name} is no longer at Pacifica, so this page is closed to new reviews —
-            existing ones are preserved below.
-          </Card>
-        ) : !session?.user ? (
-          <Card className="p-4 text-sm text-gray-600">
-            <Link href="/login" className="font-medium text-navy hover:underline">
-              Sign in
-            </Link>{" "}
-            to leave a review for {teacher.name}.
-          </Card>
-        ) : !session.user.emailVerified ? (
-          <Card className="p-4 text-sm text-gray-600">
-            Verify your email before posting a review.{" "}
-            <Link href="/account" className="font-medium text-navy hover:underline">
-              Resend verification email
-            </Link>
-            .
-          </Card>
-        ) : !session.user.username ? (
-          <Card className="p-4 text-sm text-gray-600">
-            <Link href="/choose-username" className="font-medium text-navy hover:underline">
-              Pick a username
-            </Link>{" "}
-            before posting a review for {teacher.name}.
-          </Card>
-        ) : myReview ? (
-          <p className="text-sm text-gray-500">
-            You&apos;ve already reviewed {teacher.name} — find it below to edit or delete it.
-          </p>
-        ) : (
-          <ReviewForm
-            mode="create"
-            teacherId={teacher.id}
-            teacherName={teacher.name}
-            categories={categories}
-            isFaculty={teacher.isFaculty}
-          />
-        )}
-      </div>
-
-      <div className="mt-7">
+      <div className="mt-7 border-t border-gray-200 pt-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Reviews ({reviewCards.length})
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900">Discussion ({discussionItems.length})</h2>
           <div className="flex gap-3 text-xs font-medium">
             <Link
               href={`/teachers/${id}?sort=recent`}
@@ -193,39 +163,54 @@ export default async function TeacherProfilePage({
             </Link>
           </div>
         </div>
-        <div className="mt-2">
-          {reviewCards.length === 0 ? (
-            <p className="py-6 text-sm text-gray-500">
-              No reviews yet. Be the first to review {teacher.name}.
-            </p>
+
+        <div className="mt-4">
+          {!teacher.active ? (
+            <Card className="p-4 text-sm text-gray-600">
+              {teacher.name} is no longer at Pacifica, so this page is closed to new posts —
+              existing ratings and comments are preserved below.
+            </Card>
+          ) : !session?.user ? (
+            <Card className="p-4 text-sm text-gray-600">
+              <Link href="/login" className="font-medium text-navy hover:underline">
+                Sign in
+              </Link>{" "}
+              to rate or comment on {teacher.name}.
+            </Card>
+          ) : !session.user.emailVerified ? (
+            <Card className="p-4 text-sm text-gray-600">
+              Verify your email before posting.{" "}
+              <Link href="/account" className="font-medium text-navy hover:underline">
+                Resend verification email
+              </Link>
+              .
+            </Card>
+          ) : !session.user.username ? (
+            <Card className="p-4 text-sm text-gray-600">
+              <Link href="/choose-username" className="font-medium text-navy hover:underline">
+                Pick a username
+              </Link>{" "}
+              before posting on {teacher.name}&apos;s page.
+            </Card>
           ) : (
-            reviewCards.map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                teacherId={teacher.id}
-                teacherName={teacher.name}
-                isSignedIn={!!session?.user}
-                categories={categories}
-              />
-            ))
+            <DiscussionComposer
+              teacherId={teacher.id}
+              teacherName={teacher.name}
+              categories={categories}
+              isFaculty={teacher.isFaculty}
+              hasOwnReview={!!myReview}
+            />
           )}
         </div>
-      </div>
 
-      <div className="mt-7 border-t border-gray-200 pt-6">
-        <h2 className="text-lg font-semibold text-gray-900">Discussion</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Lightweight Q&amp;A — separate from formal reviews. Keep it about{" "}
-          {teacher.isFaculty ? "the class" : "their role"}, not the person.
-        </p>
-        <div className="mt-4">
-          <CommentThread
+        <div className="mt-5">
+          <DiscussionFeed
+            items={discussionItems}
             teacherId={teacher.id}
-            comments={comments}
+            teacherName={teacher.name}
+            categories={categories}
             isSignedIn={!!session?.user}
-            needsUsername={!!session?.user && !session.user.username}
-            closed={!teacher.active}
+            canPost={canPost}
           />
         </div>
       </div>

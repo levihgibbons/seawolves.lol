@@ -3,12 +3,14 @@
 import { useState } from "react";
 
 export function HelpfulButton({
-  reviewId,
+  endpoint,
+  label = "Helpful",
   initialCount,
   initialVoted,
   isSignedIn,
 }: {
-  reviewId: string;
+  endpoint: string;
+  label?: string;
   initialCount: number;
   initialVoted: boolean;
   isSignedIn: boolean;
@@ -29,7 +31,7 @@ export function HelpfulButton({
         setVoted(nextVoted);
         setCount((c) => c + (nextVoted ? 1 : -1));
         try {
-          const res = await fetch(`/api/reviews/${reviewId}/helpful`, { method: "POST" });
+          const res = await fetch(endpoint, { method: "POST" });
           const data = await res.json();
           if (res.ok) {
             setCount(data.helpfulCount);
@@ -52,7 +54,7 @@ export function HelpfulButton({
       <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-current">
         <path d="M10 3l5 6h-3v8H8V9H5z" />
       </svg>
-      Helpful ({count})
+      {label} ({count})
     </button>
   );
 }

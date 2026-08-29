@@ -1,4 +1,4 @@
-// Prisma schema for RateMySeawolf.
+// Prisma schema for seawolves.lol.
 //
 // Runs against Supabase Postgres. Status/role/type fields are plain
 // `String` columns with allowed values enforced in the app layer (see
@@ -44,6 +44,7 @@ model User {
   reviews       Review[]
   comments      Comment[]
   helpfulVotes  HelpfulVote[]
+  commentVotes  CommentVote[]
   flagsFiled    Flag[]        @relation("FlagsFiled")
   announcements Announcement[]
   adminActions  AdminAction[] @relation("AdminActor")
@@ -121,16 +122,33 @@ model Comment {
   autoFlagged Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  teacher Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies Comment[] @relation("CommentReplies")
+  teacher Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[]     @relation("CommentReplies")
+  votes   CommentVote[]
   flags   Flag[]
 
   @@index([teacherId])
   @@index([userId])
   @@index([parentId])
   @@index([status])
+}
+
+// Upvotes on comments — the comment-thread equivalent of HelpfulVote on
+// reviews. Kept as its own table (rather than a generic polymorphic votes
+// table) to match the existing HelpfulVote pattern and keep FKs simple.
+model CommentVote {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([userId])
 }
 
 model Flag {

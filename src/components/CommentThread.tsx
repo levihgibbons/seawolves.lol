@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatRelativeTime } from "@/lib/format";
 import { MAX_COMMENT_LENGTH, MIN_COMMENT_LENGTH } from "@/lib/constants";
 import { FlagButton } from "./FlagButton";
+import { HelpfulButton } from "./HelpfulButton";
 import { Button, Textarea, ErrorText, Badge } from "./ui";
+
+// Beyond this many nested levels, replies stop adding visual indent (see
+// CommentItem) — still threaded, just flat past this point.
+const MAX_INDENT_DEPTH = 4;
 
 export type CommentNode = {
   id: string;
@@ -14,10 +18,12 @@ export type CommentNode = {
   body: string;
   isOwn: boolean;
   username: string | null;
+  helpfulCount: number;
+  viewerHasVoted: boolean;
   replies: CommentNode[];
 };
 
-function CommentComposer({
+export function CommentComposer({
   teacherId,
   parentId,
   onDone,
@@ -86,22 +92,43 @@ function CommentComposer({
   );
 }
 
-function CommentItem({
+export function CommentItem({
   comment,
   teacherId,
   isSignedIn,
+  canPost,
   depth = 0,
 }: {
   comment: CommentNode;
   teacherId: string;
   isSignedIn: boolean;
+  // Eligible to post (signed in, verified, has a username) AND the teacher
+  // is still active — see canPost in the teacher page. Controls whether
+  // Reply is offered at all; needsUsername/closed/signed-out messaging is
+  // shown once, above the whole discussion, rather than per comment.
+  canPost: boolean;
   depth?: number;
 }) {
   const router = useRouter();
   const [replying, setReplying] = useState(false);
 
+  // Replies can nest arbitrarily deep, but each level's pl-4 indent
+  // compounds visually (nested boxes, not a flat depth * offset) — stop
+  // adding indent past MAX_INDENT_DEPTH so a long thread can't push
+  // content off a narrow screen. Still fully nested/threaded past that
+  // depth, just without further indent.
+  const indented = depth > 0 && depth <= MAX_INDENT_DEPTH;
+
   return (
-    <div className={depth > 0 ? "mt-3 border-l-2 border-gray-100 pl-4" : "border-b border-gray-200 py-4 last:border-0"}>
+    <div
+      className={
+        depth === 0
+          ? "border-b border-gray-200 py-4 last:border-0"
+          : indented
+            ? "mt-3 border-l-2 border-gray-100 pl-4"
+            : "mt-3"
+      }
+    >
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <span className="font-medium text-gray-700">{comment.username ?? "Seawolf"}</span>
         <span>·</span>
@@ -109,8 +136,15 @@ function CommentItem({
         {comment.isOwn && <Badge tone="navy">You</Badge>}
       </div>
       <p className="mt-1 whitespace-pre-line text-sm text-gray-800">{comment.body}</p>
-      <div className="mt-1.5 flex items-center gap-3">
-        {depth === 0 && (
+      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+        <HelpfulButton
+          endpoint={`/api/comments/${comment.id}/helpful`}
+          label="Like"
+          initialCount={comment.helpfulCount}
+          initialVoted={comment.viewerHasVoted}
+          isSignedIn={isSignedIn}
+        />
+        {canPost && (
           <button
             type="button"
             onClick={() => setReplying((r) => !r)}
@@ -149,63 +183,15 @@ function CommentItem({
       )}
 
       {comment.replies.map((reply) => (
-        <CommentItem key={reply.id} comment={reply} teacherId={teacherId} isSignedIn={isSignedIn} depth={depth + 1} />
+        <CommentItem
+          key={reply.id}
+          comment={reply}
+          teacherId={teacherId}
+          isSignedIn={isSignedIn}
+          canPost={canPost}
+          depth={depth + 1}
+        />
       ))}
-    </div>
-  );
-}
-
-export function CommentThread({
-  teacherId,
-  comments,
-  isSignedIn,
-  needsUsername,
-  closed,
-}: {
-  teacherId: string;
-  comments: CommentNode[];
-  isSignedIn: boolean;
-  // True when signed in but hasn't picked a username yet — posting is
-  // blocked server-side either way, but this shows why instead of letting
-  // them hit an error on submit.
-  needsUsername?: boolean;
-  // True once the teacher has left Pacifica — history stays visible but no
-  // new comments/replies are accepted (matches the API's own check).
-  closed?: boolean;
-}) {
-  return (
-    <div>
-      {closed ? (
-        <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-          This discussion is closed — the person it&apos;s about has left Pacifica.
-        </p>
-      ) : needsUsername ? (
-        <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-          <Link href="/choose-username" className="font-medium text-navy hover:underline">
-            Pick a username
-          </Link>{" "}
-          to join the discussion.
-        </p>
-      ) : isSignedIn ? (
-        <CommentComposer teacherId={teacherId} />
-      ) : (
-        <p className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
-          <Link href="/login" className="font-medium text-navy hover:underline">
-            Sign in
-          </Link>{" "}
-          to join the discussion.
-        </p>
-      )}
-
-      <div className="mt-4">
-        {comments.length === 0 ? (
-          <p className="py-4 text-sm text-gray-500">No comments yet. Ask the first question.</p>
-        ) : (
-          comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} teacherId={teacherId} isSignedIn={isSignedIn} />
-          ))
-        )}
-      </div>
     </div>
   );
 }
