@@ -104,15 +104,15 @@ function ContentRow({
       <div className="flex items-center justify-between gap-2">
         <Link
           href={`/teachers/${teacherId}`}
-          className="text-sm font-medium text-gray-900 hover:underline"
+          className="text-sm font-medium text-navy-900 hover:underline"
         >
           {teacherName}
         </Link>
         <Badge tone={status === "REMOVED" ? "red" : "green"}>{status}</Badge>
       </div>
-      <p className="mt-1 line-clamp-2 text-sm text-gray-600">{preview}</p>
+      <p className="mt-1 line-clamp-2 text-sm text-navy-600">{preview}</p>
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-gray-400">{formatRelativeTime(new Date(createdAt))}</span>
+        <span className="text-xs text-navy-300">{formatRelativeTime(new Date(createdAt))}</span>
         <Button
           variant={status === "REMOVED" ? "secondary" : "outline"}
           className="text-xs"
@@ -167,16 +167,16 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
           <Avatar name={user.username ?? user.email} photoUrl={user.image} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900">{user.email}</h1>
-              {isSelf && <span className="text-xs text-gray-400">(you)</span>}
+              <h1 className="text-xl font-bold text-navy-900">{user.email}</h1>
+              {isSelf && <span className="text-xs text-navy-300">(you)</span>}
             </div>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <p className="mt-0.5 text-sm text-navy-500">
               {user.username ? `@${user.username}` : "No username set"}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge tone={user.role === "ADMIN" ? "navy" : "neutral"}>{user.role}</Badge>
               <Badge tone={STATUS_TONE[user.status]}>{user.status}</Badge>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-navy-300">
                 Joined {formatRelativeTime(new Date(user.createdAt))}
               </span>
             </div>
@@ -184,11 +184,11 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
         </div>
 
         {isSelf ? (
-          <p className="mt-4 border-t border-gray-100 pt-3 text-sm text-gray-400">
+          <p className="mt-4 border-t border-navy-50 pt-3 text-sm text-navy-300">
             You can&apos;t moderate your own account from here.
           </p>
         ) : (
-          <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-gray-100 pt-3">
+          <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-navy-50 pt-3">
             <div className="flex flex-wrap gap-1.5">
               {USER_STATUSES.filter((s) => s !== user.status).map((s) => (
                 <Button
@@ -216,9 +216,9 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
       </Card>
 
       <div className="mt-6">
-        <h2 className="text-sm font-semibold text-gray-900">Reviews ({user.reviews.length})</h2>
+        <h2 className="text-sm font-semibold text-navy-900">Reviews ({user.reviews.length})</h2>
         {user.reviews.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No reviews posted.</p>
+          <p className="mt-2 text-sm text-navy-500">No reviews posted.</p>
         ) : (
           <div className="mt-3 space-y-2">
             {user.reviews.map((r) => (
@@ -238,9 +238,9 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
       </div>
 
       <div className="mt-6">
-        <h2 className="text-sm font-semibold text-gray-900">Comments ({user.comments.length})</h2>
+        <h2 className="text-sm font-semibold text-navy-900">Comments ({user.comments.length})</h2>
         {user.comments.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No comments posted.</p>
+          <p className="mt-2 text-sm text-navy-500">No comments posted.</p>
         ) : (
           <div className="mt-3 space-y-2">
             {user.comments.map((c) => (
@@ -261,11 +261,11 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
 
       {user.flags.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold text-gray-900">Flags filed ({user.flags.length})</h2>
+          <h2 className="text-sm font-semibold text-navy-900">Flags filed ({user.flags.length})</h2>
           <div className="mt-3 space-y-2">
             {user.flags.map((f) => (
               <Card key={f.id} className="p-3 text-sm">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-navy-500">
                   <Badge tone="neutral">{f.type}</Badge>
                   <span>on {f.teacherName}</span>
                   <span>·</span>
@@ -273,7 +273,7 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
                   <span>·</span>
                   <span>{formatRelativeTime(new Date(f.createdAt))}</span>
                 </div>
-                <p className="mt-1 text-gray-700">{f.reason}</p>
+                <p className="mt-1 text-navy-700">{f.reason}</p>
               </Card>
             ))}
           </div>
@@ -282,17 +282,17 @@ export function AdminUserDetail({ user, isSelf }: { user: AdminUserDetailData; i
 
       {user.recentActions.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold text-gray-900">Recent admin actions on this account</h2>
+          <h2 className="text-sm font-semibold text-navy-900">Recent admin actions on this account</h2>
           <div className="mt-3 space-y-2">
             {user.recentActions.map((a) => (
               <Card key={a.id} className="p-3 text-sm">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-navy-500">
                   <Badge tone="navy">{humanizeAction(a.action)}</Badge>
                   <span>by {a.adminEmail}</span>
                   <span>·</span>
                   <span>{formatRelativeTime(new Date(a.createdAt))}</span>
                 </div>
-                {a.detail && <p className="mt-1 text-gray-700">{a.detail}</p>}
+                {a.detail && <p className="mt-1 text-navy-700">{a.detail}</p>}
               </Card>
             ))}
           </div>

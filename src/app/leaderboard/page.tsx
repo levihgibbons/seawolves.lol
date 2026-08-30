@@ -1,180 +1,159 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { computeRatingBreakdown } from "@/lib/ratings";
-import {
-  LEADERBOARD_MIN_REVIEWS,
-  RATING_CATEGORIES,
-  RATING_CATEGORY_LABELS,
-  type RatingCategory,
-} from "@/lib/constants";
-import { Avatar } from "@/components/Avatar";
-import { StarRatingDisplay } from "@/components/StarRating";
-import { LeaderboardFilters } from "@/components/LeaderboardFilters";
-import { Card } from "@/components/ui";
+import { LEADERBOARD_MIN_REVIEWS, type RatingCategory } from "@/lib/constants";
+import { LeaderboardBoard } from "@/components/LeaderboardBoard";
+import { PageHero } from "@/components/PageHero";
+import { EmptyState, cx } from "@/components/ui";
+import { ChatIcon, FlameIcon, TrophyIcon } from "@/components/icons";
 
 export const metadata = { title: "Leaderboard" };
 
-type SortKey = "overall" | "mostReviewed" | RatingCategory;
+type BoardKey = "top" | "loved" | "reviewed";
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "overall", label: "Overall rating" },
-  ...RATING_CATEGORIES.map((c) => ({ key: c, label: RATING_CATEGORY_LABELS[c] })),
-  { key: "mostReviewed", label: "Most reviewed" },
+// Three boards, not a filter form. Each one is its own leaderboard with its own
+// unit — that's what makes it read as a board rather than a settings screen.
+const BOARDS: {
+  key: BoardKey;
+  label: string;
+  icon: typeof TrophyIcon;
+  unit: string;
+  // What the big number on each row means.
+  value: (t: Ranked) => number | null;
+  // Boards ranked on a rating need a review floor; a raw count doesn't.
+  needsFloor: boolean;
+}[] = [
+  {
+    key: "top",
+    label: "Top rated",
+    icon: TrophyIcon,
+    unit: "overall",
+    value: (t) => t.overall,
+    needsFloor: true,
+  },
+  {
+    key: "loved",
+    label: "Most loved",
+    icon: FlameIcon,
+    unit: "approachability",
+    value: (t) => t.byCategory.approachability,
+    needsFloor: true,
+  },
+  {
+    key: "reviewed",
+    label: "Most reviewed",
+    icon: ChatIcon,
+    unit: "reviews",
+    value: (t) => t.count,
+    needsFloor: false,
+  },
 ];
+
+type Ranked = {
+  id: string;
+  name: string;
+  department: string;
+  photoUrl: string | null;
+  overall: number | null;
+  count: number;
+  byCategory: Record<RatingCategory, number | null>;
+};
+
 
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; department?: string }>;
+  searchParams: Promise<{ board?: string }>;
 }) {
-  const { sort: rawSort, department } = await searchParams;
-  const sort: SortKey = (SORT_OPTIONS.find((o) => o.key === rawSort)?.key ?? "overall") as SortKey;
+  const { board: rawBoard } = await searchParams;
+  const board = BOARDS.find((b) => b.key === rawBoard) ?? BOARDS[0];
 
   const teachers = await prisma.teacher.findMany({
     where: { active: true },
     include: {
       reviews: {
         where: { status: "VISIBLE" },
-        select: {
-          clarity: true,
-          fairness: true,
-          workload: true,
-          approachability: true,
-          createdAt: true,
-        },
+        select: { clarity: true, fairness: true, workload: true, approachability: true },
       },
     },
   });
 
-  const departments = [...new Set(teachers.map((t) => t.department))].sort();
+  const ranked: Ranked[] = teachers.map((t) => {
+    const breakdown = computeRatingBreakdown(t.reviews);
+    return {
+      id: t.id,
+      name: t.name,
+      department: t.department,
+      photoUrl: t.photoUrl,
+      overall: breakdown.overall,
+      count: breakdown.count,
+      byCategory: breakdown.byCategory,
+    };
+  });
 
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const eligible = ranked.filter((t) =>
+    board.needsFloor ? t.count >= LEADERBOARD_MIN_REVIEWS : t.count > 0
+  );
 
-  const ranked = teachers
-    .filter((t) => !department || t.department === department)
-    .map((t) => {
-      const breakdown = computeRatingBreakdown(t.reviews);
-      const reviewsThisMonth = t.reviews.filter((r) => r.createdAt >= startOfMonth).length;
-      return {
-        id: t.id,
-        name: t.name,
-        department: t.department,
-        photoUrl: t.photoUrl,
-        overall: breakdown.overall,
-        count: breakdown.count,
-        byCategory: breakdown.byCategory,
-        reviewsThisMonth,
-      };
-    });
-
-  const eligible = ranked.filter((t) => t.count >= LEADERBOARD_MIN_REVIEWS);
-
-  const sortValue = (t: (typeof ranked)[number]) =>
-    sort === "overall" ? t.overall : sort === "mostReviewed" ? t.count : t.byCategory[sort];
-
-  const sorted = [...eligible].sort((a, b) => (sortValue(b) ?? -1) - (sortValue(a) ?? -1));
-
-  const mostReviewedThisMonth = [...ranked]
-    .filter((t) => t.reviewsThisMonth > 0)
-    .sort((a, b) => b.reviewsThisMonth - a.reviewsThisMonth)
-    .slice(0, 5);
+  const sorted = [...eligible].sort((a, b) => (board.value(b) ?? -1) - (board.value(a) ?? -1));
+  const format = (t: Ranked) => {
+    const v = board.value(t);
+    if (v === null) return "—";
+    return board.key === "reviewed" ? String(v) : v.toFixed(1);
+  };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Ranked by average rating. Teachers need at least {LEADERBOARD_MIN_REVIEWS} reviews to
-        appear, so one review can&apos;t swing the ranking.
-      </p>
-
-      <div className="mt-5">
-        <LeaderboardFilters
-          sortOptions={SORT_OPTIONS}
-          currentSort={sort}
-          departments={departments}
-          currentDepartment={department}
-        />
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          {sorted.length === 0 ? (
-            <Card className="p-10 text-center">
-              <p className="font-medium text-gray-900">No leaderboard yet</p>
-              <p className="mt-1 text-sm text-gray-500">
-                {department
-                  ? `Teachers in ${department} haven't reached ${LEADERBOARD_MIN_REVIEWS} reviews yet — check back soon.`
-                  : `Once teachers have at least ${LEADERBOARD_MIN_REVIEWS} reviews, they'll appear here ranked by rating.`}
-              </p>
-            </Card>
-          ) : (
-            <ol className="space-y-1.5">
-              {sorted.map((teacher, i) => (
-                <li key={teacher.id}>
-                  <Link href={`/teachers/${teacher.id}`}>
-                    <Card className="flex items-center gap-3 p-3 hover:shadow-md">
-                      <span
-                        className={`w-6 shrink-0 text-center text-sm font-bold ${
-                          i < 3 ? "text-navy" : "text-gray-400"
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      <Avatar name={teacher.name} photoUrl={teacher.photoUrl} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-gray-900">{teacher.name}</p>
-                        <p className="truncate text-xs text-gray-500">{teacher.department}</p>
-                      </div>
-                      <div className="hidden shrink-0 gap-3 text-center text-xs text-gray-400 sm:flex">
-                        {RATING_CATEGORIES.map((c) => (
-                          <span key={c} className="w-14">
-                            <span className="block text-[10px] uppercase tracking-wide">
-                              {RATING_CATEGORY_LABELS[c].slice(0, 4)}
-                            </span>
-                            <span className="font-semibold text-gray-600">
-                              {teacher.byCategory[c]?.toFixed(1) ?? "—"}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <StarRatingDisplay
-                          value={sort === "mostReviewed" ? teacher.overall : sortValue(teacher)}
-                          size="sm"
-                        />
-                        <p className="text-xs text-gray-500">{teacher.count} reviews</p>
-                      </div>
-                    </Card>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          )}
+    <div>
+      <PageHero title="Leaderboard">
+        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:inline-flex sm:overflow-visible sm:rounded-full sm:bg-white/[0.07] sm:p-1 sm:pb-1 sm:ring-1 sm:ring-inset sm:ring-white/10">
+          {BOARDS.map((b) => {
+            const active = b.key === board.key;
+            const Icon = b.icon;
+            return (
+              <Link
+                key={b.key}
+                href={`/leaderboard?board=${b.key}`}
+                aria-current={active ? "page" : undefined}
+                className={cx(
+                  "inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold transition duration-200",
+                  active
+                    ? "bg-white text-navy-800 shadow-soft"
+                    : "bg-white/[0.07] text-white/70 ring-1 ring-inset ring-white/10 hover:bg-white/15 hover:text-white sm:bg-transparent sm:ring-0"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {b.label}
+              </Link>
+            );
+          })}
         </div>
+      </PageHero>
 
-        <div>
-          <h2 className="text-sm font-semibold text-gray-900">Most reviewed this month</h2>
-          <div className="mt-2 space-y-1.5">
-            {mostReviewedThisMonth.length === 0 ? (
-              <p className="text-sm text-gray-500">No reviews posted yet this month.</p>
-            ) : (
-              mostReviewedThisMonth.map((teacher) => (
-                <Link key={teacher.id} href={`/teachers/${teacher.id}`}>
-                  <Card className="flex items-center gap-2.5 p-2.5 hover:shadow-md">
-                    <Avatar name={teacher.name} photoUrl={teacher.photoUrl} size="sm" />
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">
-                      {teacher.name}
-                    </span>
-                    <span className="shrink-0 text-xs font-medium text-navy">
-                      {teacher.reviewsThisMonth} new
-                    </span>
-                  </Card>
-                </Link>
-              ))
-            )}
-          </div>
+      <div className="relative z-10 -mt-10 rounded-t-[2rem] bg-mist shadow-[0_-24px_48px_-24px_rgba(0,21,46,0.35)]">
+        <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+          {sorted.length === 0 ? (
+            <EmptyState
+              icon={<TrophyIcon className="h-6 w-6" />}
+              title="No one's on the board yet"
+              action={{ href: "/teachers", label: "Rate a teacher" }}
+            >
+              {board.needsFloor
+                ? `Takes ${LEADERBOARD_MIN_REVIEWS} reviews to qualify.`
+                : null}
+            </EmptyState>
+          ) : (
+            <LeaderboardBoard
+              unit={board.unit}
+              entries={sorted.map((t) => ({
+                id: t.id,
+                name: t.name,
+                department: t.department,
+                photoUrl: t.photoUrl,
+                display: format(t),
+                stars: board.key === "reviewed" ? null : board.value(t),
+              }))}
+            />
+          )}
         </div>
       </div>
     </div>

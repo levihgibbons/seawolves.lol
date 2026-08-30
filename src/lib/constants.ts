@@ -163,6 +163,26 @@ export const DEPARTMENT_GROUPS = [
 
 export const OTHER_DEPARTMENT_GROUP = "Other";
 
+// One short role tag per person on the roster — "Teacher"/"Coach"/"Staff"/etc.
+// instead of only flagging non-faculty as "Staff". Based on which
+// DEPARTMENT_GROUPS bucket the department falls into; isFaculty only
+// distinguishes teacher vs. staff within a bucket that has both.
+const GROUP_ROLE_LABELS: Record<string, string> = {
+  Athletics: "Coach",
+  "Student Life & Counseling": "Counselor",
+  "Admissions & Marketing": "Admissions",
+  "Operations & Administration": "Staff",
+  Leadership: "Leadership",
+};
+
+export function teacherRoleLabel(department: string, isFaculty: boolean): string {
+  const group = DEPARTMENT_GROUPS.find((g) =>
+    (g.departments as readonly string[]).includes(department)
+  )?.name;
+  if (group && group in GROUP_ROLE_LABELS) return GROUP_ROLE_LABELS[group];
+  return isFaculty ? "Teacher" : "Staff";
+}
+
 export function groupDepartments(
   departments: string[]
 ): { group: string; departments: string[] }[] {

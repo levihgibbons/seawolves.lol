@@ -3,9 +3,10 @@
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
-import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { Button, Input, Label, ErrorText } from "@/components/ui";
 import { PasswordInput } from "@/components/PasswordInput";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { AuthShell } from "@/components/AuthShell";
 
 type Step = "email" | "password" | "code" | "setPassword" | "google-only";
 
@@ -114,7 +115,7 @@ function LoginForm() {
     e.preventDefault();
     setError(null);
     if (password !== confirmPassword) {
-      setError("Passwords don't match.");
+      setError("Those passwords don't match.");
       return;
     }
     setLoading(true);
@@ -135,9 +136,9 @@ function LoginForm() {
     step === "password"
       ? "Welcome back"
       : step === "code"
-        ? "Verify your email"
+        ? "Check your email"
         : step === "setPassword"
-          ? "Create your account"
+          ? "Finish setting up"
           : "Sign in";
 
   const subtext =
@@ -146,173 +147,173 @@ function LoginForm() {
       : step === "code"
         ? `We sent a 6-digit code to ${email}.`
         : step === "setPassword"
-          ? "You're verified — choose a username and password to finish setting up your account."
+          ? "Pick a username and a password — that's the last step."
           : step === "google-only"
             ? `${email} uses Google sign-in.`
-            : "Enter your email to sign in or create an account.";
+            : "Use your email to sign in or make an account.";
+
+  const switchLink =
+    "text-sm font-bold text-surf-600 transition-colors duration-150 hover:text-surf-500";
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-bold text-gray-900">{heading}</h1>
-      <p className="mt-1 text-sm text-gray-600">{subtext}</p>
-      <Card className="mt-6 p-6">
-        {step === "email" && (
-          <>
-            <GoogleSignInButton callbackUrl={callbackUrl} />
-            <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
-              <div className="h-px flex-1 bg-gray-200" />
-              or
-              <div className="h-px flex-1 bg-gray-200" />
-            </div>
-            <form onSubmit={submitEmail} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  autoFocus
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                />
-              </div>
-              <ErrorText>{error}</ErrorText>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Continuing..." : "Continue"}
-              </Button>
-            </form>
-          </>
-        )}
-
-        {step === "password" && (
-          <form onSubmit={submitPassword} className="space-y-4">
+    <AuthShell title={heading} subtitle={subtext}>
+      {step === "email" && (
+        <>
+          <GoogleSignInButton callbackUrl={callbackUrl} />
+          <div className="my-5 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-navy-300">
+            <div className="h-px flex-1 bg-navy-100" />
+            or
+            <div className="h-px flex-1 bg-navy-100" />
+          </div>
+          <form onSubmit={submitEmail} className="space-y-4">
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="password"
-                type="password"
+                id="email"
+                type="email"
                 required
                 autoFocus
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                placeholder="you@email.com"
               />
             </div>
             <ErrorText>{error}</ErrorText>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-            <div className="flex justify-between text-sm">
-              <button type="button" onClick={reset} className="text-navy hover:underline">
-                Use a different email
-              </button>
-              <a
-                href={`/forgot-password?email=${encodeURIComponent(email)}`}
-                className="text-navy hover:underline"
-              >
-                Forgot password?
-              </a>
-            </div>
-          </form>
-        )}
-
-        {step === "code" && (
-          <form onSubmit={submitCode} className="space-y-4">
-            <div>
-              <Label htmlFor="code">6-digit code</Label>
-              <Input
-                id="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
-                autoFocus
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="tracking-[0.5em]"
-              />
-            </div>
-            <ErrorText>{error}</ErrorText>
-            {codeSentAgain && <p className="text-sm text-green-700">A new code was sent.</p>}
-            <Button type="submit" className="w-full" disabled={loading || code.length !== 6}>
-              {loading ? "Verifying..." : "Verify"}
-            </Button>
-            <div className="flex justify-between text-sm">
-              <button type="button" onClick={reset} className="text-navy hover:underline">
-                Use a different email
-              </button>
-              <button type="button" onClick={resendCode} className="text-navy hover:underline">
-                Resend code
-              </button>
-            </div>
-          </form>
-        )}
-
-        {step === "setPassword" && (
-          <form onSubmit={submitNewPassword} className="space-y-4">
-            <div>
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                required
-                autoFocus
-                minLength={3}
-                maxLength={20}
-                pattern="[a-zA-Z0-9_]+"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-              />
-              <p className="mt-1 text-xs text-gray-400">
-                3-20 characters: letters, numbers, and underscores. This is how you&apos;ll be
-                identified in reviews and comments.
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="new-password">Password</Label>
-              <PasswordInput
-                id="new-password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-              <p className="mt-1 text-xs text-gray-400">At least 8 characters.</p>
-            </div>
-            <div>
-              <Label htmlFor="confirm-password">Confirm password</Label>
-              <PasswordInput
-                id="confirm-password"
-                required
-                minLength={8}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
-            <ErrorText>{error}</ErrorText>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? "Checking…" : "Continue"}
             </Button>
           </form>
-        )}
+        </>
+      )}
 
-        {step === "google-only" && (
-          <>
-            <GoogleSignInButton callbackUrl={callbackUrl} />
-            <button
-              type="button"
-              onClick={reset}
-              className="mt-4 w-full text-center text-sm text-navy hover:underline"
-            >
-              Use a different email
+      {step === "password" && (
+        <form onSubmit={submitPassword} className="space-y-4">
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <PasswordInput
+              id="password"
+              required
+              autoFocus
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+          <ErrorText>{error}</ErrorText>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </Button>
+          <div className="flex justify-between gap-3">
+            <button type="button" onClick={reset} className={switchLink}>
+              Different email
             </button>
-          </>
-        )}
-      </Card>
-    </div>
+            <a href={`/forgot-password?email=${encodeURIComponent(email)}`} className={switchLink}>
+              Forgot password?
+            </a>
+          </div>
+        </form>
+      )}
+
+      {step === "code" && (
+        <form onSubmit={submitCode} className="space-y-4">
+          <div>
+            <Label htmlFor="code">6-digit code</Label>
+            <Input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              autoFocus
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="text-center font-display text-2xl font-extrabold tracking-[0.45em]"
+            />
+          </div>
+          <ErrorText>{error}</ErrorText>
+          {codeSentAgain && (
+            <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+              New code sent.
+            </p>
+          )}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={loading || code.length !== 6}
+          >
+            {loading ? "Verifying…" : "Verify"}
+          </Button>
+          <div className="flex justify-between gap-3">
+            <button type="button" onClick={reset} className={switchLink}>
+              Different email
+            </button>
+            <button type="button" onClick={resendCode} className={switchLink}>
+              Resend code
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === "setPassword" && (
+        <form onSubmit={submitNewPassword} className="space-y-4">
+          <div>
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              required
+              autoFocus
+              minLength={3}
+              maxLength={20}
+              pattern="[a-zA-Z0-9_]+"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+            />
+            <p className="mt-1.5 text-xs text-navy-400">
+              This is the name on everything you post. Letters, numbers and underscores.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="new-password">Password</Label>
+            <PasswordInput
+              id="new-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+            <p className="mt-1.5 text-xs text-navy-400">At least 8 characters.</p>
+          </div>
+          <div>
+            <Label htmlFor="confirm-password">Confirm password</Label>
+            <PasswordInput
+              id="confirm-password"
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
+          <ErrorText>{error}</ErrorText>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? "Creating account…" : "Create account"}
+          </Button>
+        </form>
+      )}
+
+      {step === "google-only" && (
+        <>
+          <GoogleSignInButton callbackUrl={callbackUrl} />
+          <button type="button" onClick={reset} className={`mt-4 w-full text-center ${switchLink}`}>
+            Use a different email
+          </button>
+        </>
+      )}
+    </AuthShell>
   );
 }
 

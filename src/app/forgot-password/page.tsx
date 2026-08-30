@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
-import { Button, Input, Label, ErrorText, Card } from "@/components/ui";
+import { Button, Input, Label, ErrorText } from "@/components/ui";
+import { AuthShell } from "@/components/AuthShell";
 
 function ForgotPasswordForm() {
   const searchParams = useSearchParams();
@@ -34,35 +36,41 @@ function ForgotPasswordForm() {
   }
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-bold text-gray-900">Reset your password</h1>
-      <Card className="mt-6 p-6">
-        {done ? (
-          <p className="text-sm text-gray-600">
-            If an account exists for <strong>{email}</strong>, a reset link was just sent.
-          </p>
-        ) : (
-          <form onSubmit={submit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
-            <ErrorText>{error}</ErrorText>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send reset link"}
-            </Button>
-          </form>
-        )}
-      </Card>
-    </div>
+    <AuthShell
+      title="Reset your password"
+      subtitle={done ? undefined : "We'll email you a link to set a new one."}
+      footer={
+        <Link href="/login" className="font-bold text-surf-300 hover:text-surf-200">
+          Back to sign in
+        </Link>
+      }
+    >
+      {done ? (
+        <p className="text-sm leading-relaxed text-navy-600">
+          If an account exists for <strong className="font-bold text-navy-900">{email}</strong>, a
+          reset link is on its way.
+        </p>
+      ) : (
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </div>
+          <ErrorText>{error}</ErrorText>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? "Sending…" : "Send reset link"}
+          </Button>
+        </form>
+      )}
+    </AuthShell>
   );
 }
 

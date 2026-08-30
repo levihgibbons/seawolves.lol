@@ -4,7 +4,8 @@ import { useState } from "react";
 import { type RatingCategory } from "@/lib/constants";
 import { ReviewForm } from "./ReviewForm";
 import { CommentComposer } from "./CommentThread";
-import { Card } from "./ui";
+import { Card, cx } from "./ui";
+import { ChatIcon, StarOutlineIcon } from "./icons";
 
 // One composer for the whole discussion, instead of a separate "review"
 // section and "comments" section — pick a mode instead of picking a
@@ -31,31 +32,36 @@ export function DiscussionComposer({
   const effectiveMode = hasOwnReview ? "comment" : mode;
 
   const tabClass = (active: boolean) =>
-    `rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-      active ? "bg-navy text-white" : "text-gray-600 hover:bg-gray-100"
-    }`;
+    cx(
+      "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition duration-200 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-initial",
+      active ? "bg-white text-navy-900 shadow-soft" : "text-navy-500 hover:text-navy-800"
+    );
 
   return (
     <div>
-      <div className="mb-3 inline-flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
+      <div className="mb-3 inline-flex w-full gap-1 rounded-full bg-navy-100/70 p-1 sm:w-auto">
         <button
           type="button"
           disabled={hasOwnReview}
-          title={hasOwnReview ? `You've already rated ${teacherName} — find it below to edit.` : undefined}
+          title={hasOwnReview ? `You already rated ${teacherName}` : undefined}
           onClick={() => setMode("review")}
           className={tabClass(effectiveMode === "review")}
         >
-          Leave a rating
+          <StarOutlineIcon className="h-4 w-4" />
+          Rate
         </button>
-        <button type="button" onClick={() => setMode("comment")} className={tabClass(effectiveMode === "comment")}>
-          Write a comment
+        <button
+          type="button"
+          onClick={() => setMode("comment")}
+          className={tabClass(effectiveMode === "comment")}
+        >
+          <ChatIcon className="h-4 w-4" />
+          Comment
         </button>
       </div>
 
       {hasOwnReview && (
-        <p className="mb-3 text-xs text-gray-500">
-          You&apos;ve already rated {teacherName} — find your rating below to edit or delete it.
-        </p>
+        <p className="mb-3 text-xs font-medium text-navy-500">Already rated. Edit yours below.</p>
       )}
 
       {effectiveMode === "review" ? (
@@ -67,7 +73,7 @@ export function DiscussionComposer({
           isFaculty={isFaculty}
         />
       ) : (
-        <Card className="p-4">
+        <Card className="p-4 sm:p-5">
           <CommentComposer teacherId={teacherId} />
         </Card>
       )}

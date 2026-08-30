@@ -50,7 +50,7 @@ export function AdminUsersTable({
             id="user-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as UserStatus | "")}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+            className="w-full rounded-md border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900 transition-colors duration-150 focus:border-navy-800 focus:ring-1 focus:ring-surf-400"
           >
             <option value="">All statuses</option>
             {USER_STATUSES.map((s) => (
@@ -63,12 +63,12 @@ export function AdminUsersTable({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-500">No matching users.</p>
+        <p className="py-10 text-center text-sm text-navy-500">No matching users.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-navy-100 bg-white">
           <table className="min-w-full">
             <thead>
-              <tr className="border-b border-gray-200 text-left text-xs font-semibold uppercase text-gray-500">
+              <tr className="border-b border-navy-100 text-left text-xs font-semibold uppercase text-navy-500">
                 <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Role</th>
                 <th className="px-4 py-2">Reviews</th>

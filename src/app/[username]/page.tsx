@@ -5,7 +5,9 @@ import { reviewOverall } from "@/lib/ratings";
 import { formatRelativeTime } from "@/lib/format";
 import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
-import { Card, Badge } from "@/components/ui";
+import { PageContent } from "@/components/PageHero";
+import { Card, EmptyState } from "@/components/ui";
+import { ShieldIcon, StarOutlineIcon } from "@/components/icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -40,50 +42,89 @@ export default async function ProfilePage({
   );
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <Card className="p-5">
-        <div className="flex items-start gap-4">
-          <Avatar name={user.username} photoUrl={user.image} size="lg" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900">@{user.username}</h1>
-              {user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
-            </div>
-            <p className="mt-0.5 text-xs text-gray-400">Seawolf since {joined}</p>
-            {user.bio ? (
-              <p className="mt-2 whitespace-pre-line text-sm text-gray-700">{user.bio}</p>
-            ) : (
-              <p className="mt-2 text-sm text-gray-400">No bio yet.</p>
+    <div>
+      <section className="surface-deep relative overflow-hidden">
+        <div className="dot-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden />
+        <span
+          className="animate-tide pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-surf-500/25 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-4 pb-20 pt-14 text-center sm:px-6">
+          <Avatar
+            name={user.username}
+            photoUrl={user.image}
+            size="xl"
+            className="animate-scale-in ring-4 ring-white/15"
+          />
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <h1 className="font-display text-3xl font-extrabold tracking-tight text-white">
+              {user.username}
+            </h1>
+            {user.role === "ADMIN" && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wide text-surf-200 ring-1 ring-inset ring-white/15">
+                <ShieldIcon className="h-3.5 w-3.5" />
+                Admin
+              </span>
             )}
           </div>
+          <p className="mt-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/40">
+            Seawolf since {joined}
+          </p>
+          {user.bio && (
+            <p className="mt-4 max-w-md whitespace-pre-line text-pretty text-sm leading-relaxed text-white/70">
+              {user.bio}
+            </p>
+          )}
+          <div className="mt-6 flex gap-2">
+            <div className="rounded-2xl bg-white/[0.07] px-5 py-2.5 ring-1 ring-inset ring-white/10">
+              <p className="font-display text-xl font-extrabold leading-none text-white">
+                {reviews.length}
+              </p>
+              <p className="mt-1 text-[0.6rem] font-bold uppercase tracking-[0.12em] text-white/45">
+                Ratings
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white/[0.07] px-5 py-2.5 ring-1 ring-inset ring-white/10">
+              <p className="font-display text-xl font-extrabold leading-none text-white">
+                {commentCount}
+              </p>
+              <p className="mt-1 text-[0.6rem] font-bold uppercase tracking-[0.12em] text-white/45">
+                Comments
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 flex gap-4 border-t border-gray-100 pt-3 text-sm text-gray-500">
-          <span>
-            <strong className="text-gray-900">{reviews.length}</strong> review
-            {reviews.length === 1 ? "" : "s"}
-          </span>
-          <span>
-            <strong className="text-gray-900">{commentCount}</strong> comment
-            {commentCount === 1 ? "" : "s"}
-          </span>
-        </div>
-      </Card>
+      </section>
 
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold text-gray-900">Reviews by @{user.username}</h2>
+      <PageContent width="max-w-3xl">
+        <h2 className="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-navy-900">
+          <StarOutlineIcon className="h-4 w-4 text-surf-500" />
+          Ratings by {user.username}
+        </h2>
         {reviews.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No reviews posted yet.</p>
+          <EmptyState
+            className="mt-4"
+            icon={<StarOutlineIcon className="h-6 w-6" />}
+            title="Nothing posted yet"
+          />
         ) : (
-          <div className="mt-3 space-y-3">
-            {reviews.map((review) => (
-              <Link key={review.id} href={`/teachers/${review.teacherId}`}>
-                <Card className="p-4 hover:shadow-md">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-medium text-gray-900">{review.teacher.name}</p>
-                    <StarRatingDisplay value={reviewOverall(review)} size="sm" />
+          <div className="mt-4 space-y-3">
+            {reviews.map((review, i) => (
+              <Link
+                key={review.id}
+                href={`/teachers/${review.teacherId}`}
+                className="block animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 45, 320)}ms` }}
+              >
+                <Card className="p-4" interactive>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate font-bold text-navy-900">{review.teacher.name}</p>
+                    <StarRatingDisplay value={reviewOverall(review)} size="xs" />
                   </div>
-                  <p className="mt-1 line-clamp-2 text-sm text-gray-600">{review.comment}</p>
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-navy-500">
+                    {review.comment}
+                  </p>
+                  <p className="mt-2.5 text-xs text-navy-300">
                     {formatRelativeTime(review.createdAt)}
                   </p>
                 </Card>
@@ -91,7 +132,7 @@ export default async function ProfilePage({
             ))}
           </div>
         )}
-      </div>
+      </PageContent>
     </div>
   );
 }

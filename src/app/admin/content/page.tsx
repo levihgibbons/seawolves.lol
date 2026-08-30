@@ -44,7 +44,7 @@ export default async function AdminContentPage() {
 
   return (
     <div>
-      <p className="mb-6 text-sm text-gray-600">
+      <p className="mb-6 text-sm text-navy-600">
         Every review and comment on the site, visible or removed — not just what&apos;s been
         flagged. Search across teachers, authors, and content, and remove or restore anything
         directly.

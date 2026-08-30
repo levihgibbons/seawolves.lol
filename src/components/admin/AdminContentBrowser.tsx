@@ -75,7 +75,7 @@ function ContentRow({
 
   return (
     <Card className="p-4">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-navy-500">
         <Badge tone="neutral">{kind === "REVIEW" ? "Review" : "Comment"}</Badge>
         <span>on {item.teacherName}</span>
         {kind === "REVIEW" && (
@@ -89,9 +89,9 @@ function ContentRow({
         <Badge tone={STATUS_TONE[item.status]}>{item.status}</Badge>
       </div>
 
-      <p className="mt-2 whitespace-pre-line text-sm text-gray-800">{preview(item.body)}</p>
+      <p className="mt-2 whitespace-pre-line text-sm text-navy-800">{preview(item.body)}</p>
 
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-navy-500">
         <strong>Author:</strong> {item.authorEmail}
       </p>
 
@@ -150,7 +150,7 @@ export function AdminContentBrowser({
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-1 border-b border-gray-200">
+      <div className="mb-4 flex flex-wrap gap-1 border-b border-navy-100">
         {(
           [
             ["REVIEW", `Reviews (${reviews.length})`],
@@ -164,8 +164,8 @@ export function AdminContentBrowser({
             aria-current={tab === value ? "page" : undefined}
             className={`rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-150 ${
               tab === value
-                ? "border-navy text-navy"
-                : "border-transparent text-gray-600 hover:border-navy hover:text-navy"
+                ? "border-navy-800 text-navy-800"
+                : "border-transparent text-navy-600 hover:border-navy-800 hover:text-navy-800"
             }`}
           >
             {label}
@@ -189,7 +189,7 @@ export function AdminContentBrowser({
             id="content-status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ContentStatus | "")}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+            className="w-full rounded-md border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900 transition-colors duration-150 focus:border-navy-800 focus:ring-1 focus:ring-surf-400"
           >
             <option value="">All</option>
             {CONTENT_STATUSES.map((s) => (
@@ -202,7 +202,7 @@ export function AdminContentBrowser({
       </div>
 
       {active.length === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-500">No matching content.</p>
+        <p className="py-10 text-center text-sm text-navy-500">No matching content.</p>
       ) : (
         <div className="space-y-2">
           {tab === "REVIEW"

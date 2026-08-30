@@ -48,12 +48,20 @@ export function ChooseUsernameForm({ callbackUrl }: { callbackUrl: string }) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
+          placeholder="seawolf24"
         />
-        <p className="mt-1 text-xs text-gray-400">3-20 characters: letters, numbers, and underscores.</p>
+        <p className="mt-1.5 text-xs text-navy-400">
+          3–20 characters: letters, numbers and underscores.
+        </p>
       </div>
       <ErrorText>{error}</ErrorText>
-      <Button type="submit" className="w-full" disabled={loading || username.trim().length < 3}>
-        {loading ? "Saving..." : "Continue"}
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={loading || username.trim().length < 3}
+      >
+        {loading ? "Saving…" : "Continue"}
       </Button>
     </form>
   );

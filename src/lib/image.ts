@@ -41,8 +41,11 @@ export async function fileToAvatarDataUrl(file: File): Promise<string> {
 // Same idea for announcement images, but shown full-width rather than
 // cropped to a circle, so this keeps the original aspect ratio and just
 // caps the longest side.
-export const ANNOUNCEMENT_IMAGE_MAX_DIMENSION = 1600;
-export const ANNOUNCEMENT_IMAGE_JPEG_QUALITY = 0.85;
+// The feed renders these inside `max-h-96 w-full object-cover`, so 1600px was
+// far more than is ever displayed — and the encoded string is inlined into the
+// page payload as a base64 data: URL, so every extra pixel is shipped twice.
+export const ANNOUNCEMENT_IMAGE_MAX_DIMENSION = 1280;
+export const ANNOUNCEMENT_IMAGE_JPEG_QUALITY = 0.78;
 export const MAX_ANNOUNCEMENT_IMAGE_FILE_BYTES = 10 * 1024 * 1024;
 
 export async function fileToAnnouncementImageDataUrl(file: File): Promise<string> {

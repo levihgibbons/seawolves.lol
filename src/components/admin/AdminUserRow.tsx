@@ -43,18 +43,18 @@ export function AdminUserRow({
   }
 
   return (
-    <tr className="border-b border-gray-100 last:border-0">
-      <td className="px-4 py-2 text-sm text-gray-800">
-        {email} {isSelf && <span className="text-xs text-gray-400">(you)</span>}
+    <tr className="border-b border-navy-50 last:border-0">
+      <td className="px-4 py-2 text-sm text-navy-800">
+        {email} {isSelf && <span className="text-xs text-navy-300">(you)</span>}
       </td>
-      <td className="px-4 py-2 text-sm text-gray-500">{role}</td>
-      <td className="px-4 py-2 text-sm text-gray-500">{reviewCount}</td>
+      <td className="px-4 py-2 text-sm text-navy-500">{role}</td>
+      <td className="px-4 py-2 text-sm text-navy-500">{reviewCount}</td>
       <td className="px-4 py-2">
         <Badge tone={STATUS_TONE[status]}>{status}</Badge>
       </td>
       <td className="px-4 py-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <Link href={`/admin/users/${id}`} className="text-xs font-medium text-navy hover:underline">
+          <Link href={`/admin/users/${id}`} className="text-xs font-medium text-navy-800 hover:underline">
             View
           </Link>
           {!isSelf &&

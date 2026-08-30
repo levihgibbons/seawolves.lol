@@ -50,7 +50,7 @@ function AddTeacherForm() {
 
   return (
     <Card className="p-4">
-      <h2 className="text-sm font-semibold text-gray-900">Add a teacher</h2>
+      <h2 className="text-sm font-semibold text-navy-900">Add a teacher</h2>
       <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-3">
         <div className="flex-1 basis-40">
           <Label htmlFor="new-name">Name</Label>
@@ -75,12 +75,12 @@ function AddTeacherForm() {
             onChange={(e) => setPhotoUrl(e.target.value)}
           />
         </div>
-        <label className="flex items-center gap-1.5 pb-2 text-sm text-gray-700">
+        <label className="flex items-center gap-1.5 pb-2 text-sm text-navy-700">
           <input
             type="checkbox"
             checked={isFaculty}
             onChange={(e) => setIsFaculty(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-navy focus:ring-navy"
+            className="h-4 w-4 rounded border-navy-200 text-navy-800 focus:ring-surf-400"
           />
           Classroom teacher
         </label>
@@ -88,7 +88,7 @@ function AddTeacherForm() {
           {loading ? "Adding..." : "Add teacher"}
         </Button>
       </form>
-      <p className="mt-2 text-xs text-gray-400">
+      <p className="mt-2 text-xs text-navy-300">
         Uncheck for staff who don&apos;t assign homework (admins, coaches, counselors, etc.) — they
         won&apos;t get a workload rating.
       </p>
@@ -156,12 +156,12 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
             className="flex-1 basis-48"
           />
         </div>
-        <label className="flex items-center gap-1.5 text-sm text-gray-700">
+        <label className="flex items-center gap-1.5 text-sm text-navy-700">
           <input
             type="checkbox"
             checked={isFaculty}
             onChange={(e) => setIsFaculty(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-navy focus:ring-navy"
+            className="h-4 w-4 rounded border-navy-200 text-navy-800 focus:ring-surf-400"
           />
           Classroom teacher (gets a workload rating)
         </label>
@@ -183,12 +183,12 @@ function TeacherRow({ teacher }: { teacher: AdminTeacher }) {
       <div className="flex items-center gap-3">
         <Avatar name={teacher.name} photoUrl={teacher.photoUrl} size="sm" />
         <div>
-          <p className="flex flex-wrap items-center gap-1.5 font-medium text-gray-900">
+          <p className="flex flex-wrap items-center gap-1.5 font-medium text-navy-900">
             {teacher.name}
             {!teacher.active && <Badge tone="neutral">The Fallen</Badge>}
             {!teacher.isFaculty && <Badge tone="neutral">Staff</Badge>}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-navy-500">
             {teacher.department} · {teacher.reviewCount} review{teacher.reviewCount === 1 ? "" : "s"}
           </p>
         </div>

@@ -3,7 +3,9 @@ import { searchTeachers } from "@/lib/searchTeachers";
 import { TeacherCard } from "@/components/TeacherCard";
 import { SearchBar } from "@/components/SearchBar";
 import { TeacherFilterPanel } from "@/components/TeacherFilterPanel";
-import { Badge } from "@/components/ui";
+import { PageHero, PageContent } from "@/components/PageHero";
+import { EmptyState } from "@/components/ui";
+import { SearchIcon } from "@/components/icons";
 
 export const metadata = { title: "Roster" };
 
@@ -21,46 +23,72 @@ export default async function TeachersPage({
   const { results: filtered, isFallback } = searchTeachers(byDepartment, q ?? "");
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-2xl font-bold text-gray-900">Roster</h1>
-        <p className="text-sm text-gray-500">
-          Showing <span className="font-medium text-gray-700">{filtered.length}</span> of{" "}
-          {teachers.length} teachers
-        </p>
-      </div>
-
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-        <div className="flex-1">
-          <SearchBar defaultValue={q} placeholder="Search by name or subject..." size="lg" />
+    <div>
+      <PageHero title="Roster">
+        <div className="max-w-xl">
+          <SearchBar defaultValue={q} placeholder="Search a teacher or subject" size="lg" />
         </div>
-        <TeacherFilterPanel departments={departments} currentDepartment={department} currentQuery={q} />
-      </div>
+      </PageHero>
 
-      {department && (
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-sm text-gray-500">Filtered by:</span>
-          <Badge tone="navy">{department}</Badge>
-        </div>
-      )}
-
-      {isFallback && (
-        <p className="mt-4 text-sm text-gray-500">
-          No exact match for &ldquo;{q}&rdquo; — here are the closest names.
-        </p>
-      )}
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((teacher, i) => (
-          <div
-            key={teacher.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
-          >
-            <TeacherCard teacher={teacher} />
+      <PageContent>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-navy-500">
+              <span className="font-display text-lg font-extrabold text-navy-900">
+                {filtered.length}
+              </span>{" "}
+              {filtered.length === 1 ? "result" : "results"}
+              {filtered.length !== teachers.length && (
+                <span className="text-navy-300"> of {teachers.length}</span>
+              )}
+            </p>
+            {q && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold text-navy-600 ring-1 ring-inset ring-navy-100">
+                <SearchIcon className="h-3 w-3 text-navy-300" />
+                {q}
+              </span>
+            )}
+            {department && (
+              <span className="inline-flex items-center rounded-full bg-navy-800 px-3 py-1 text-xs font-bold text-white">
+                {department}
+              </span>
+            )}
           </div>
-        ))}
-      </div>
+          <TeacherFilterPanel
+            departments={departments}
+            currentDepartment={department}
+            currentQuery={q}
+          />
+        </div>
+
+        {isFallback && (
+          <p className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm text-navy-500 ring-1 ring-inset ring-navy-100">
+            No exact match for <strong className="text-navy-800">{q}</strong> — here are the closest
+            names.
+          </p>
+        )}
+
+        {filtered.length === 0 ? (
+          <EmptyState
+            className="mt-8"
+            icon={<SearchIcon className="h-6 w-6" />}
+            title="Nobody matched that"
+            action={{ href: "/teachers", label: "See everyone" }}
+          />
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filtered.map((teacher, i) => (
+              <div
+                key={teacher.id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 35, 420)}ms` }}
+              >
+                <TeacherCard teacher={teacher} />
+              </div>
+            ))}
+          </div>
+        )}
+      </PageContent>
     </div>
   );
 }

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cx } from "@/components/ui";
 
 const TABS = [
   { href: "/admin", label: "Overview" },
-  { href: "/admin/flags", label: "Flagged content" },
+  { href: "/admin/flags", label: "Flagged" },
   { href: "/admin/content", label: "Content" },
   { href: "/admin/teachers", label: "Teachers" },
   { href: "/admin/users", label: "Users" },
@@ -17,7 +18,7 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mt-3 flex flex-wrap gap-1 border-b border-gray-200">
+    <nav className="flex flex-wrap gap-1 rounded-full bg-white p-1 shadow-soft ring-1 ring-inset ring-navy-100">
       {TABS.map((tab) => {
         // Overview lives at the exact /admin path — match it exactly so it
         // doesn't also light up for every other /admin/* tab.
@@ -28,11 +29,12 @@ export function AdminNav() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+            className={cx(
+              "rounded-full px-3.5 py-1.5 text-sm font-bold transition duration-200",
               active
-                ? "border-navy text-navy"
-                : "border-transparent text-gray-600 hover:border-navy hover:text-navy"
-            }`}
+                ? "bg-navy-800 text-white shadow-soft"
+                : "text-navy-500 hover:bg-navy-50 hover:text-navy-800"
+            )}
           >
             {tab.label}
           </Link>

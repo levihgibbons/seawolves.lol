@@ -4,34 +4,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Avatar } from "./Avatar";
-import { Button, Textarea, Input, Label, ErrorText, Card } from "./ui";
+import { Button, Textarea, Input, Label, ErrorText, cx } from "./ui";
 import { fileToAvatarDataUrl } from "@/lib/image";
-
-function PencilIcon() {
-  return (
-    <svg viewBox="0 0 20 20" className="h-4 w-4 fill-none stroke-current">
-      <path
-        d="M13.5 3.5l3 3L6 17l-4 1 1-4L13.5 3.5z"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 fill-none stroke-current">
-      <path
-        d="M3 7a1.5 1.5 0 011.5-1.5h1l.7-1.2a1 1 0 01.86-.5h3.88a1 1 0 01.86.5l.7 1.2h1A1.5 1.5 0 0115 7v6.5A1.5 1.5 0 0113.5 15h-9A1.5 1.5 0 013 13.5V7z"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-      <circle cx="9" cy="10" r="2.3" strokeWidth="1.3" />
-    </svg>
-  );
-}
+import { ImageIcon, PencilIcon } from "./icons";
 
 export function ProfileEditForm({
   username,
@@ -124,33 +99,34 @@ export function ProfileEditForm({
         type="button"
         onClick={startEditing}
         aria-label="Edit profile"
-        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy"
+        className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-navy-50 px-3.5 py-1.5 text-xs font-bold text-navy-600 transition duration-200 hover:-translate-y-0.5 hover:bg-navy-100 hover:shadow-soft active:scale-95"
       >
-        <PencilIcon />
+        <PencilIcon className="h-3.5 w-3.5" />
+        Edit
       </button>
     );
   }
 
   return (
-    <Card className="mt-4 p-4">
-      <form onSubmit={submit} className="space-y-4">
-        <div className="flex items-center gap-3">
+    <div className="mt-5 rounded-2xl border border-navy-100 bg-navy-50/40 p-4 sm:p-5">
+      <form onSubmit={submit} className="space-y-5">
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={processingPhoto}
             aria-label="Change profile picture"
-            className="group relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+            className="group relative shrink-0 rounded-full"
           >
             <Avatar name={newUsername || username} photoUrl={image || null} size="md" />
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-white opacity-0 transition duration-150 group-hover:bg-black/40 group-hover:opacity-100">
-              <CameraIcon />
+            <span
+              className={cx(
+                "absolute inset-0 flex items-center justify-center rounded-full bg-navy-950/50 text-white transition duration-200",
+                processingPhoto ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}
+            >
+              <ImageIcon className="h-4 w-4" />
             </span>
-            {processingPhoto && (
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 text-white">
-                <CameraIcon />
-              </span>
-            )}
           </button>
           <input
             ref={fileInputRef}
@@ -159,27 +135,24 @@ export function ProfileEditForm({
             onChange={handlePhotoSelect}
             className="hidden"
           />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700">Profile picture</p>
-            <div className="mt-1 flex items-center gap-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={processingPhoto}
+              className="rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-navy-600 ring-1 ring-inset ring-navy-100 transition hover:bg-navy-50 disabled:opacity-50"
+            >
+              {processingPhoto ? "Processing…" : "Change photo"}
+            </button>
+            {image && (
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={processingPhoto}
-                className="font-medium text-navy hover:underline disabled:opacity-50"
+                onClick={() => setImage("")}
+                className="rounded-full px-2.5 py-1.5 text-xs font-bold text-navy-300 transition hover:bg-rose-50 hover:text-rose-600"
               >
-                {processingPhoto ? "Processing..." : "Choose photo"}
+                Remove
               </button>
-              {image && (
-                <button
-                  type="button"
-                  onClick={() => setImage("")}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
@@ -194,10 +167,10 @@ export function ProfileEditForm({
             disabled={cooldownActive}
             onChange={(e) => setNewUsername(e.target.value)}
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1.5 text-xs text-navy-400">
             {cooldownActive
-              ? `You can change your username again on ${cooldownDate}.`
-              : "3-20 characters: letters, numbers, and underscores. You can change this once every 30 days."}
+              ? `You can change this again on ${cooldownDate}.`
+              : "Letters, numbers and underscores. Changeable once every 30 days."}
           </p>
         </div>
 
@@ -207,24 +180,26 @@ export function ProfileEditForm({
             id="profile-bio"
             rows={3}
             maxLength={280}
-            placeholder="Tell the squad a lil about yourself..."
+            placeholder="Say something about yourself."
             value={bio}
             onChange={(e) => setBio(e.target.value)}
           />
-          <p className="mt-1 text-xs text-gray-400">{bio.length}/280</p>
+          <p className="mt-1.5 text-right text-xs font-semibold tabular-nums text-navy-300">
+            {bio.length}/280
+          </p>
         </div>
 
         <ErrorText>{error}</ErrorText>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading || processingPhoto} className="text-xs">
-            {loading ? "Saving..." : "Save"}
+          <Button type="submit" size="sm" disabled={loading || processingPhoto}>
+            {loading ? "Saving…" : "Save"}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => setEditing(false)} className="text-xs">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)}>
             Cancel
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }

@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Button, Input, Label, Textarea, ErrorText, Card } from "@/components/ui";
+import { Button, Input, Label, Textarea, ErrorText, Card, EmptyState, cx } from "@/components/ui";
 import { formatDateTimeStacked } from "@/lib/format";
 import { fileToAnnouncementImageDataUrl } from "@/lib/image";
+import { ImageIcon, MegaphoneIcon, PencilIcon, TrashIcon } from "@/components/icons";
 
 // No author field on purpose — announcements are posted anonymously as "the
 // admins," not attributed to whichever admin happened to post them. (Who
@@ -49,13 +50,12 @@ function ImagePicker({
 
   return (
     <div>
-      <Label>Image (optional)</Label>
       {imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element -- base64 data URL, not a remote asset
         <img
           src={imageUrl}
           alt=""
-          className="mb-2 max-h-48 w-full rounded-md border border-gray-200 object-cover"
+          className="mb-2.5 max-h-56 w-full rounded-2xl border border-navy-100 object-cover"
         />
       )}
       <input
@@ -66,21 +66,22 @@ function ImagePicker({
         className="hidden"
         disabled={disabled || processing}
       />
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || processing}
-          className="font-medium text-navy hover:underline disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full bg-navy-50 px-3.5 py-1.5 text-xs font-bold text-navy-600 transition duration-200 hover:bg-navy-100 disabled:opacity-50"
         >
-          {processing ? "Processing..." : imageUrl ? "Choose a different image" : "Choose image"}
+          <ImageIcon className="h-3.5 w-3.5" />
+          {processing ? "Processing…" : imageUrl ? "Replace image" : "Add image"}
         </button>
         {imageUrl && (
           <button
             type="button"
             onClick={() => onChange("")}
             disabled={disabled || processing}
-            className="text-gray-400 hover:text-gray-600"
+            className="rounded-full px-2.5 py-1.5 text-xs font-bold text-navy-300 transition hover:bg-rose-50 hover:text-rose-600"
           >
             Remove
           </button>
@@ -123,15 +124,23 @@ function AnnouncementComposer() {
   }
 
   return (
-    <Card className="p-4">
-      <h2 className="text-sm font-semibold text-gray-900">Post an announcement</h2>
-      <p className="mt-1 text-xs text-gray-500">
-        Goes out to everyone via the bell icon in the header.
-      </p>
-      <form onSubmit={submit} className="mt-3 space-y-3">
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-navy-100 bg-navy-50/50 px-5 py-3.5">
+        <MegaphoneIcon className="h-4 w-4 text-surf-500" />
+        <h2 className="font-display text-base font-extrabold tracking-tight text-navy-900">
+          New announcement
+        </h2>
+      </div>
+      <form onSubmit={submit} className="space-y-4 p-5">
         <div>
           <Label htmlFor="ann-title">Title</Label>
-          <Input id="ann-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input
+            id="ann-title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="What's going on?"
+          />
         </div>
         <div>
           <Label htmlFor="ann-body">Message</Label>
@@ -146,7 +155,7 @@ function AnnouncementComposer() {
         <ImagePicker imageUrl={imageUrl} onChange={setImageUrl} disabled={loading} />
         <ErrorText>{error}</ErrorText>
         <Button type="submit" disabled={loading}>
-          {loading ? "Posting..." : "Post announcement"}
+          {loading ? "Posting…" : "Post"}
         </Button>
       </form>
     </Card>
@@ -189,8 +198,8 @@ function AnnouncementEditForm({
   }
 
   return (
-    <Card className="p-4">
-      <form onSubmit={submit} className="space-y-3">
+    <Card className="p-5">
+      <form onSubmit={submit} className="space-y-4">
         <div>
           <Label htmlFor={`edit-title-${announcement.id}`}>Title</Label>
           <Input
@@ -213,10 +222,10 @@ function AnnouncementEditForm({
         <ImagePicker imageUrl={imageUrl} onChange={setImageUrl} disabled={loading} />
         <ErrorText>{error}</ErrorText>
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading} className="text-xs">
-            {loading ? "Saving..." : "Save"}
+          <Button type="submit" size="sm" disabled={loading}>
+            {loading ? "Saving…" : "Save"}
           </Button>
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={loading} className="text-xs">
+          <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
         </div>
@@ -228,9 +237,11 @@ function AnnouncementEditForm({
 function AnnouncementCard({
   announcement,
   isAdmin,
+  index,
 }: {
   announcement: AnnouncementItem;
   isAdmin: boolean;
+  index: number;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -261,37 +272,65 @@ function AnnouncementCard({
   const posted = formatDateTimeStacked(new Date(announcement.createdAt));
 
   return (
-    <Card className="p-4">
-      <div className="flex items-start justify-between gap-3">
-        <p className="font-semibold text-gray-900">{announcement.title}</p>
-        <div className="shrink-0 text-right text-xs leading-tight text-gray-400">
-          <div>{posted.date}</div>
-          <div>
-            {posted.time}
+    <article
+      className="animate-fade-up rounded-card border border-navy-100/80 bg-white p-5 shadow-soft transition duration-300 hover:shadow-lift"
+      style={{ animationDelay: `${Math.min(index * 60, 300)}ms` }}
+    >
+      <header className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-navy-800 text-surf-300">
+          <MegaphoneIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-lg font-extrabold leading-snug tracking-tight text-navy-900">
+            {announcement.title}
+          </h2>
+          <p className="mt-0.5 text-xs font-medium text-navy-300">
+            {posted.date} · {posted.time}
             {wasEdited && " · edited"}
-          </div>
+          </p>
         </div>
-      </div>
+      </header>
+
       {announcement.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element -- base64 data URL, not a remote asset
         <img
           src={announcement.imageUrl}
           alt=""
-          className="mt-2 max-h-96 w-full rounded-md object-cover"
+          loading="lazy"
+          decoding="async"
+          className="mt-4 max-h-96 w-full rounded-2xl object-cover"
         />
       )}
-      <p className="mt-1.5 whitespace-pre-line text-sm text-gray-700">{announcement.body}</p>
+
+      <p className="mt-3 whitespace-pre-line text-[0.9rem] leading-relaxed text-navy-700">
+        {announcement.body}
+      </p>
+
       {isAdmin && (
-        <div className="mt-3 flex gap-2 border-t border-gray-100 pt-3">
-          <Button variant="ghost" onClick={() => setEditing(true)} className="text-xs">
+        <div className="mt-4 flex gap-1.5 border-t border-navy-50 pt-3.5">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold text-navy-400 transition duration-200 hover:bg-navy-50 hover:text-navy-700"
+          >
+            <PencilIcon className="h-3.5 w-3.5" />
             Edit
-          </Button>
-          <Button variant="ghost" onClick={remove} disabled={deleting} className="text-xs">
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
+          </button>
+          <button
+            type="button"
+            onClick={remove}
+            disabled={deleting}
+            className={cx(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold text-navy-300 transition duration-200 hover:bg-rose-50 hover:text-rose-600",
+              deleting && "opacity-50"
+            )}
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
         </div>
       )}
-    </Card>
+    </article>
   );
 }
 
@@ -303,19 +342,14 @@ export function AnnouncementsFeed({
   isAdmin: boolean;
 }) {
   return (
-    <div className="mt-8 space-y-4">
+    <div className="space-y-4">
       {isAdmin && <AnnouncementComposer />}
       {announcements.length === 0 ? (
-        <Card className="mx-auto max-w-md p-8 text-center">
-          <p className="font-medium text-gray-900">No announcements yet.</p>
-          <p className="mt-1.5 text-sm text-gray-500">Check back later.</p>
-        </Card>
+        <EmptyState icon={<MegaphoneIcon className="h-6 w-6" />} title="Nothing announced yet" />
       ) : (
-        <div className="space-y-3">
-          {announcements.map((a) => (
-            <AnnouncementCard key={a.id} announcement={a} isAdmin={isAdmin} />
-          ))}
-        </div>
+        announcements.map((a, i) => (
+          <AnnouncementCard key={a.id} announcement={a} isAdmin={isAdmin} index={i} />
+        ))
       )}
     </div>
   );

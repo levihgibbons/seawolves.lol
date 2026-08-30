@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatRelativeTime } from "@/lib/format";
+import { BellIcon, MegaphoneIcon } from "./icons";
+import { cx } from "./ui";
 
 export type NotificationItem = {
   id: string;
@@ -13,9 +15,9 @@ export type NotificationItem = {
 
 const SEEN_KEY = "seawolves:lastSeenAnnouncementAt";
 
-// The bell surfaces new site-wide announcements (posted and edited by
-// admins from /announcements itself — see AnnouncementsFeed.tsx) as
-// notifications — it's the alert, the /announcements page is the archive.
+// Surfaces new site-wide announcements (posted from /announcements itself —
+// see AnnouncementsFeed.tsx). The bell is the alert; /announcements is the
+// archive.
 export function NotificationBell({ notifications }: { notifications: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(false);
@@ -42,8 +44,15 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   function toggle() {
@@ -63,52 +72,59 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
       <button
         type="button"
         onClick={toggle}
-        aria-label="Notifications"
-        className="relative flex h-8 w-8 items-center justify-center rounded-md text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+        aria-label="Announcements"
+        aria-expanded={open}
+        className={cx(
+          "relative flex h-10 w-10 items-center justify-center rounded-full text-white transition duration-200 active:scale-90",
+          open ? "bg-white/15" : "hover:bg-white/10"
+        )}
       >
-        <svg viewBox="0 0 20 20" className="h-5 w-5 fill-none stroke-current">
-          <path
-            d="M5 8a5 5 0 0110 0c0 4 1.5 5 1.5 5h-13S5 12 5 8z"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path d="M8.5 15.5a1.5 1.5 0 003 0" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <BellIcon className="h-5 w-5" />
         {unread && (
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400 ring-2 ring-navy" />
+          <span className="absolute right-1.5 top-1.5 flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-surf-300 opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-surf-400 ring-2 ring-navy-900" />
+          </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-md border border-gray-200 bg-white py-1 text-sm text-gray-700 shadow-lg sm:w-80">
-          <div className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Notifications
+        <div className="absolute right-0 z-20 mt-2 w-80 origin-top-right animate-drop-in overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-lift sm:w-88">
+          <div className="flex items-center gap-2 border-b border-navy-100 bg-navy-50/60 px-4 py-3">
+            <MegaphoneIcon className="h-4 w-4 text-surf-500" />
+            <p className="text-sm font-extrabold tracking-tight text-navy-900">Announcements</p>
           </div>
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-[22rem] overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="px-3 py-6 text-center text-sm text-gray-400">Nothing yet — quiet out here.</p>
+              <p className="px-4 py-10 text-center text-sm text-navy-400">
+                Nothing new right now.
+              </p>
             ) : (
               notifications.map((n) => (
-                <div key={n.id} className="border-b border-gray-50 px-3 py-2.5 last:border-0">
-                  <p className="font-medium text-gray-900">{n.title}</p>
-                  <p className="mt-0.5 whitespace-pre-line text-xs text-gray-600">{n.body}</p>
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    {formatRelativeTime(new Date(n.createdAt))}
+                <div
+                  key={n.id}
+                  className="border-b border-navy-50 px-4 py-3 transition-colors duration-150 last:border-0 hover:bg-navy-50/50"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-sm font-bold text-navy-900">{n.title}</p>
+                    <span className="shrink-0 text-[0.7rem] font-semibold text-navy-300">
+                      {formatRelativeTime(new Date(n.createdAt))}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 whitespace-pre-line text-xs leading-relaxed text-navy-500">
+                    {n.body}
                   </p>
                 </div>
               ))
             )}
           </div>
-          <div className="border-t border-gray-100 px-3 py-2 text-center">
-            <Link
-              href="/announcements"
-              className="text-xs font-medium text-navy hover:underline"
-              onClick={() => setOpen(false)}
-            >
-              View all announcements
-            </Link>
-          </div>
+          <Link
+            href="/announcements"
+            onClick={() => setOpen(false)}
+            className="block border-t border-navy-100 bg-white px-4 py-2.5 text-center text-xs font-bold text-navy-700 transition hover:bg-navy-50"
+          >
+            See all
+          </Link>
         </div>
       )}
     </div>

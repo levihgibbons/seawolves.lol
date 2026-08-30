@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { AnnouncementsFeed } from "@/components/AnnouncementsFeed";
+import { PageHero, PageContent } from "@/components/PageHero";
 
 export const metadata = { title: "Announcements" };
 
@@ -23,15 +24,12 @@ export default async function AnnouncementsPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Announcements</h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-gray-600">
-          Site-wide updates from admins. New ones also show up under the bell icon in the header.
-        </p>
-      </div>
+    <div>
+      <PageHero title="Announcements" />
 
-      <AnnouncementsFeed announcements={data} isAdmin={isAdmin} />
+      <PageContent width="max-w-3xl">
+        <AnnouncementsFeed announcements={data} isAdmin={isAdmin} />
+      </PageContent>
     </div>
   );
 }

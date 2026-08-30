@@ -56,7 +56,7 @@ export function AdminAuditLogList({ entries }: { entries: AuditLogEntry[] }) {
             id="audit-action"
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors duration-150 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+            className="w-full rounded-md border border-navy-200 bg-white px-3 py-2 text-sm text-navy-900 transition-colors duration-150 focus:border-navy-800 focus:ring-1 focus:ring-surf-400"
           >
             <option value="">All actions</option>
             {ADMIN_ACTIONS.map((a) => (
@@ -69,12 +69,12 @@ export function AdminAuditLogList({ entries }: { entries: AuditLogEntry[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-500">No matching audit log entries.</p>
+        <p className="py-10 text-center text-sm text-navy-500">No matching audit log entries.</p>
       ) : (
         <div className="space-y-2">
           {filtered.map((e) => (
             <Card key={e.id} className="p-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-navy-500">
                 <span title={e.createdAt}>{formatRelativeTime(new Date(e.createdAt))}</span>
                 <span>·</span>
                 <Badge tone="navy">{humanizeAction(e.action)}</Badge>
@@ -83,7 +83,7 @@ export function AdminAuditLogList({ entries }: { entries: AuditLogEntry[] }) {
                 <span>·</span>
                 <Badge tone="neutral">{e.targetType}</Badge>
               </div>
-              {e.detail && <p className="mt-2 text-sm text-gray-800">{e.detail}</p>}
+              {e.detail && <p className="mt-2 text-sm text-navy-800">{e.detail}</p>}
             </Card>
           ))}
         </div>

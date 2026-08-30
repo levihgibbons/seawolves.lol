@@ -1,57 +1,266 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+/* ==========================================================================
+   seawolves.lol — design system
+   Navy + white (Pacifica), with a marine-cyan accent and gold for ratings.
+   Everything visual in the app should come from the tokens below.
+   ========================================================================== */
 
-  --color-navy: #003260;
-  --color-navy-dark: #001f3f;
-  --color-navy-light: #0d4a80;
-  --color-steel: #4a7fa7;
-  --color-steel-light: #eaf1f6;
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-outfit), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand navy. 800 is Pacifica navy (#003260). */
+  --color-navy-50: #f0f5fa;
+  --color-navy-100: #dde8f2;
+  --color-navy-200: #bccfe0;
+  --color-navy-300: #8ba4bd;
+  --color-navy-400: #5d7c9a;
+  --color-navy-500: #3d5f7f;
+  --color-navy-600: #23486a;
+  --color-navy-700: #0d4a80;
+  --color-navy-800: #003260;
+  --color-navy-900: #002247;
+  --color-navy-950: #00152e;
+
+  /* Marine accent — the "seawolf" cyan. Used for energy, never for body text. */
+  --color-surf-100: #d7f6fd;
+  --color-surf-200: #aeeefb;
+  --color-surf-300: #6fe0f6;
+  --color-surf-400: #2ccbe8;
+  --color-surf-500: #0eaacb;
+  --color-surf-600: #0a89a6;
+
+  /* Gold — stars, ranks, anything that should feel like a win. */
+  --color-gold-100: #fef4d8;
+  --color-gold-200: #fde9b0;
+  --color-gold-300: #fcd968;
+  --color-gold-400: #f7b62d;
+  --color-gold-500: #e09600;
+
+  /* Surfaces */
+  --color-mist: #f3f7fb;
+  --color-ink: #061426;
+
+  --radius-card: 1.125rem;
+
+  --shadow-soft: 0 1px 2px rgba(0, 50, 96, 0.05), 0 6px 20px -10px rgba(0, 50, 96, 0.14);
+  --shadow-lift: 0 2px 6px rgba(0, 50, 96, 0.07), 0 20px 40px -16px rgba(0, 50, 96, 0.3);
+  --shadow-pop: 0 10px 30px -12px rgba(0, 50, 96, 0.45);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.35s ease-out both;
+  --animate-scale-in: scale-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-drop-in: drop-in 0.18s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  --animate-pop: pop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-tide: tide 16s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-navy: var(--color-navy);
-  --color-navy-dark: var(--color-navy-dark);
-  --color-navy-light: var(--color-navy-light);
-  --color-steel: var(--color-steel);
-  --color-steel-light: var(--color-steel-light);
-  --font-sans: var(--font-inter);
+/* ---------------------------------------------------------------- base --- */
+
+html {
+  /* Keeps anchored content clear of the sticky header. */
+  scroll-padding-top: 5rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--color-mist);
+  color: var(--color-navy-950);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+  text-rendering: optimizeLegibility;
 }
 
-/* Solid navy band above the footer. */
-.footer-divider {
-  height: 4px;
-  background-color: var(--color-navy);
+/* Every focusable thing gets a visible ring, including the dozens of bare
+   <button>s in feature components that never opted in individually.
+   In @layer base so a component's own focus-visible utility still wins —
+   unlayered, this silently killed every `focus-visible:outline-none` in the
+   codebase and drew two indicators on top of each other. No border-radius here:
+   `inherit` sets the ELEMENT's radius, which squared off every pill on focus. */
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    /* navy, not cyan: surf-400 measured 1.8:1 on white, well under the 3:1 that
+       WCAG 1.4.11 asks of a focus indicator. Panels flip the colour by
+       redefining --focus-ring, which inherits — more reliable than competing on
+       descendant specificity. */
+    outline: 2px solid var(--focus-ring, var(--color-navy-800));
+    outline-offset: 2px;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+/* Navy panels need a light ring. */
+.surface-deep {
+  --focus-ring: var(--color-surf-300);
 }
 
-@keyframes fade-in-up {
+::selection {
+  background-color: var(--color-surf-200);
+  color: var(--color-navy-900);
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+/* Thin, navy-tinted scrollbars so long feeds don't get a chunky grey bar. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-navy-200) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-navy-200);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-navy-300);
+}
+
+/* ------------------------------------------------------------ keyframes --- */
+
+@keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translate3d(0, 14px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out both;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+@keyframes tide {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.08);
+    opacity: 0.8;
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ------------------------------------------------------------ utilities --- */
+
+/* Deep navy panel used for the header, hero and footer bands. */
+@utility surface-deep {
+  background-image:
+    radial-gradient(120% 140% at 12% 0%, #0d4a80 0%, transparent 55%),
+    radial-gradient(90% 120% at 92% 8%, #0a89a6 0%, transparent 48%),
+    linear-gradient(168deg, #012a52 0%, #00152e 100%);
+  color: #fff;
+}
+
+/* Soft, blue-tinted haze for section backgrounds. */
+@utility surface-haze {
+  background-image:
+    radial-gradient(90% 60% at 50% 0%, rgba(44, 203, 232, 0.1) 0%, transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, var(--color-mist) 100%);
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(96deg, #ffffff 8%, #aeeefb 52%, #6fe0f6 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hairline dot grid, used behind hero art. */
+@utility dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Ratings bars animate their fill in on first paint. */
+.bar-fill {
+  transform-origin: left;
+  animation: bar-grow 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Legacy name kept so any straggler markup still animates. */
+.animate-fade-in-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* ----------------------------------------------------- reduced motion --- */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -61,6 +270,5 @@ html {
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

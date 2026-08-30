@@ -2,15 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui";
 import { reviewOverall, type RatableReview } from "@/lib/ratings";
 
-export const metadata = { title: "Admin Overview" };
+export const metadata = { title: "Overview" };
 
 const WEEKS_OF_HISTORY = 8;
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <Card className="p-3.5">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-0.5 text-2xl font-bold text-navy">{value}</p>
+    <Card className="p-4" interactive>
+      <p className="font-display text-3xl font-extrabold leading-none tracking-tight text-navy-900">
+        {value}
+      </p>
+      <p className="mt-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-navy-400">
+        {label}
+      </p>
     </Card>
   );
 }
@@ -115,19 +119,19 @@ export default async function AdminOverviewPage() {
       </div>
 
       <Card className="mt-6 p-5">
-        <h2 className="text-sm font-semibold text-gray-900">Most active reviewers</h2>
-        <p className="mt-1 text-xs text-gray-500">
+        <h2 className="font-display text-base font-extrabold tracking-tight text-navy-900">Most active reviewers</h2>
+        <p className="mt-1 text-xs text-navy-500">
           Shown by review count only — not linked to identities here. Use the flagged content
           queue if you need to act on a specific account.
         </p>
         {topReviewers.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">No reviews yet.</p>
+          <p className="mt-3 text-sm text-navy-500">No reviews yet.</p>
         ) : (
           <ul className="mt-3 space-y-1.5">
             {topReviewers.map((r, i) => (
               <li key={r.userId} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">Reviewer #{i + 1}</span>
-                <span className="font-medium text-gray-900">{r._count.userId} reviews</span>
+                <span className="text-navy-700">Reviewer #{i + 1}</span>
+                <span className="font-medium text-navy-900">{r._count.userId} reviews</span>
               </li>
             ))}
           </ul>
@@ -135,9 +139,9 @@ export default async function AdminOverviewPage() {
       </Card>
 
       <Card className="mt-6 p-5">
-        <h2 className="text-sm font-semibold text-gray-900">Rating distribution</h2>
+        <h2 className="font-display text-base font-extrabold tracking-tight text-navy-900">Rating distribution</h2>
         {reviewCount === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">No reviews yet.</p>
+          <p className="mt-3 text-sm text-navy-500">No reviews yet.</p>
         ) : (
           <ul className="mt-3 space-y-1.5">
             {[5, 4, 3, 2, 1].map((star) => {
@@ -145,11 +149,11 @@ export default async function AdminOverviewPage() {
               const pct = maxRatingCount > 0 ? (count / maxRatingCount) * 100 : 0;
               return (
                 <li key={star} className="flex items-center gap-3">
-                  <span className="w-14 shrink-0 text-sm text-gray-600">{star} stars</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
-                    <div className="h-full rounded-full bg-navy" style={{ width: `${pct}%` }} />
+                  <span className="w-14 shrink-0 text-sm text-navy-600">{star} stars</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-navy-100">
+                    <div className="h-full rounded-full bg-gradient-to-r from-navy-800 to-surf-500" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="w-8 shrink-0 text-right text-sm font-medium text-gray-900">
+                  <span className="w-8 shrink-0 text-right text-sm font-medium text-navy-900">
                     {count}
                   </span>
                 </li>
@@ -160,19 +164,19 @@ export default async function AdminOverviewPage() {
       </Card>
 
       <Card className="mt-6 p-5">
-        <h2 className="text-sm font-semibold text-gray-900">Reviews per week</h2>
-        <p className="mt-1 text-xs text-gray-500">Last {WEEKS_OF_HISTORY} weeks, oldest to most recent.</p>
+        <h2 className="font-display text-base font-extrabold tracking-tight text-navy-900">Reviews per week</h2>
+        <p className="mt-1 text-xs text-navy-500">Last {WEEKS_OF_HISTORY} weeks, oldest to most recent.</p>
         {maxWeeklyCount === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">No reviews in the last {WEEKS_OF_HISTORY} weeks.</p>
+          <p className="mt-3 text-sm text-navy-500">No reviews in the last {WEEKS_OF_HISTORY} weeks.</p>
         ) : (
           <div className="mt-4 flex h-32 items-end justify-between gap-2">
             {weeklyCounts.map((count, i) => {
               const pct = (count / maxWeeklyCount) * 100;
               return (
                 <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-                  <span className="text-xs font-medium text-gray-900">{count}</span>
+                  <span className="text-xs font-medium text-navy-900">{count}</span>
                   <div
-                    className="w-full rounded-t bg-steel"
+                    className="w-full rounded-t-lg bg-gradient-to-t from-surf-500 to-surf-300"
                     style={{ height: `${Math.max(pct, count > 0 ? 4 : 0)}%` }}
                   />
                 </div>
@@ -183,17 +187,17 @@ export default async function AdminOverviewPage() {
       </Card>
 
       <Card className="mt-6 p-5">
-        <h2 className="text-sm font-semibold text-gray-900">Most flagged teachers</h2>
+        <h2 className="font-display text-base font-extrabold tracking-tight text-navy-900">Most flagged teachers</h2>
         {mostFlaggedTeachers.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">No flags yet.</p>
+          <p className="mt-3 text-sm text-navy-500">No flags yet.</p>
         ) : (
           <ul className="mt-3 space-y-1.5">
             {mostFlaggedTeachers.map((t, i) => (
               <li key={i} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">
+                <span className="text-navy-700">
                   {i + 1}. {t.name}
                 </span>
-                <span className="font-medium text-gray-900">{t.count} flags</span>
+                <span className="font-medium text-navy-900">{t.count} flags</span>
               </li>
             ))}
           </ul>

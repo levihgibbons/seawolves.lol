@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { AdminModerationQueue, type QueueItem } from "@/components/admin/AdminModerationQueue";
 
-export const metadata = { title: "Flagged Content" };
+export const metadata = { title: "Flagged" };
 
 export default async function AdminFlagsPage() {
   const [reportedFlags, autoFlaggedReviews, autoFlaggedComments] = await Promise.all([
@@ -100,7 +100,7 @@ export default async function AdminFlagsPage() {
 
   return (
     <div>
-      <p className="mb-6 text-sm text-gray-600">
+      <p className="mb-6 text-sm text-navy-600">
         {items.length} item{items.length === 1 ? "" : "s"} awaiting review — user reports and
         content the automated filter flagged for a human to check.
       </p>

@@ -61,7 +61,7 @@ function QueueRow({ item }: { item: QueueItem }) {
 
   return (
     <Card className="p-4">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-navy-500">
         <Badge tone={item.source === "report" ? "amber" : "neutral"}>
           {item.source === "report" ? "User report" : "Auto-flagged"}
         </Badge>
@@ -71,9 +71,9 @@ function QueueRow({ item }: { item: QueueItem }) {
         <span>{new Date(item.createdAt).toLocaleString()}</span>
       </div>
 
-      <p className="mt-2 whitespace-pre-line text-sm text-gray-800">{item.contentPreview}</p>
+      <p className="mt-2 whitespace-pre-line text-sm text-navy-800">{item.contentPreview}</p>
 
-      <div className="mt-2 rounded-md bg-gray-50 p-2 text-xs text-gray-600">
+      <div className="mt-2 rounded-md bg-navy-50 p-2 text-xs text-navy-600">
         <p>
           <strong>Author (internal only):</strong> {item.authorEmail}
         </p>
@@ -104,7 +104,7 @@ function QueueRow({ item }: { item: QueueItem }) {
 
 export function AdminModerationQueue({ items }: { items: QueueItem[] }) {
   if (items.length === 0) {
-    return <p className="py-10 text-center text-sm text-gray-500">The queue is empty. Nice work.</p>;
+    return <p className="py-10 text-center text-sm text-navy-500">The queue is empty. Nice work.</p>;
   }
   return (
     <div className="space-y-3">

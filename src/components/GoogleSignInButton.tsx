@@ -1,11 +1,10 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Button } from "./ui";
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 18 18" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 18 18" className="h-[1.05rem] w-[1.05rem]" aria-hidden="true">
       <path
         fill="#4285F4"
         d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.87 2.7-6.62Z"
@@ -28,14 +27,13 @@ function GoogleIcon() {
 
 export function GoogleSignInButton({ callbackUrl }: { callbackUrl: string }) {
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      className="w-full"
       onClick={() => signIn("google", { callbackUrl })}
+      className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-navy-200 bg-white px-5 py-2.5 text-sm font-bold text-navy-800 transition duration-200 hover:-translate-y-0.5 hover:border-navy-300 hover:shadow-soft active:scale-[0.97]"
     >
       <GoogleIcon />
       Continue with Google
-    </Button>
+    </button>
   );
 }

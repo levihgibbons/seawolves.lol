@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Textarea, ErrorText } from "./ui";
+import { Button, Textarea, ErrorText, cx, META_ACTION } from "./ui";
+import { FlagIcon } from "./icons";
 
 export function FlagButton({ endpoint, isSignedIn }: { endpoint: string; isSignedIn: boolean }) {
   const [open, setOpen] = useState(false);
@@ -12,7 +13,11 @@ export function FlagButton({ endpoint, isSignedIn }: { endpoint: string; isSigne
   if (!isSignedIn) return null;
 
   if (status === "done") {
-    return <span className="text-xs text-gray-500">Reported — thank you.</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
+        Reported — thanks
+      </span>
+    );
   }
 
   if (!open) {
@@ -20,8 +25,9 @@ export function FlagButton({ endpoint, isSignedIn }: { endpoint: string; isSigne
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs font-medium text-gray-400 hover:text-red-600"
+        className={cx(META_ACTION, "text-navy-300 hover:bg-rose-50 hover:text-rose-600")}
       >
+        <FlagIcon className="h-3.5 w-3.5" />
         Report
       </button>
     );
@@ -29,7 +35,7 @@ export function FlagButton({ endpoint, isSignedIn }: { endpoint: string; isSigne
 
   return (
     <form
-      className="mt-2 w-full max-w-sm space-y-2 rounded-md border border-gray-200 bg-gray-50 p-3"
+      className="mt-2 w-full max-w-md animate-scale-in space-y-2.5 rounded-2xl border border-navy-100 bg-navy-50/50 p-3.5"
       onSubmit={async (e) => {
         e.preventDefault();
         setStatus("loading");
@@ -49,23 +55,21 @@ export function FlagButton({ endpoint, isSignedIn }: { endpoint: string; isSigne
         }
       }}
     >
-      <label className="block text-xs font-medium text-gray-600">
-        Why are you reporting this? (e.g. personal attack, off-topic, harassment)
-      </label>
+      <label className="block text-xs font-bold text-navy-600">What&apos;s wrong with this?</label>
       <Textarea
         required
         minLength={3}
         rows={2}
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        className="text-sm"
+        placeholder="Personal attack, off-topic, harassment…"
       />
       <ErrorText>{error}</ErrorText>
       <div className="flex gap-2">
-        <Button type="submit" variant="danger" disabled={status === "loading"} className="text-xs">
-          Submit report
+        <Button type="submit" variant="danger" size="sm" disabled={status === "loading"}>
+          {status === "loading" ? "Sending…" : "Send report"}
         </Button>
-        <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="text-xs">
+        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
           Cancel
         </Button>
       </div>

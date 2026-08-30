@@ -1,6 +1,8 @@
 import { type RatingCategory } from "@/lib/constants";
 import { ReviewCard, type ReviewCardData } from "./ReviewCard";
 import { CommentItem, type CommentNode } from "./CommentThread";
+import { EmptyState } from "./ui";
+import { ChatIcon } from "./icons";
 
 // A single merged, chronologically-sortable feed of reviews and comments —
 // replaces what used to be two separate sections ("Reviews" with star
@@ -28,34 +30,36 @@ export function DiscussionFeed({
 }) {
   if (items.length === 0) {
     return (
-      <p className="py-6 text-sm text-gray-500">
-        Nothing here yet — be the first to rate or comment on {teacherName}.
-      </p>
+      <EmptyState icon={<ChatIcon className="h-6 w-6" />} title="Nobody's said anything yet" />
     );
   }
 
   return (
-    <div>
-      {items.map((item) =>
-        item.type === "review" ? (
-          <ReviewCard
-            key={`review-${item.data.id}`}
-            review={item.data}
-            teacherId={teacherId}
-            teacherName={teacherName}
-            isSignedIn={isSignedIn}
-            categories={categories}
-          />
-        ) : (
-          <CommentItem
-            key={`comment-${item.data.id}`}
-            comment={item.data}
-            teacherId={teacherId}
-            isSignedIn={isSignedIn}
-            canPost={canPost}
-          />
-        )
-      )}
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div
+          key={`${item.type}-${item.data.id}`}
+          className="animate-fade-up"
+          style={{ animationDelay: `${Math.min(i * 45, 360)}ms` }}
+        >
+          {item.type === "review" ? (
+            <ReviewCard
+              review={item.data}
+              teacherId={teacherId}
+              teacherName={teacherName}
+              isSignedIn={isSignedIn}
+              categories={categories}
+            />
+          ) : (
+            <CommentItem
+              comment={item.data}
+              teacherId={teacherId}
+              isSignedIn={isSignedIn}
+              canPost={canPost}
+            />
+          )}
+        </div>
+      ))}
     </div>
   );
 }

@@ -10,7 +10,7 @@ import {
   type RatingCategory,
 } from "@/lib/constants";
 import { StarRatingInput } from "./StarRating";
-import { Button, Textarea, ErrorText, Card } from "./ui";
+import { Button, Textarea, ErrorText, Card, cx } from "./ui";
 
 type Ratings = Partial<Record<RatingCategory, number>>;
 
@@ -46,17 +46,19 @@ export function ReviewForm({
   const [loading, setLoading] = useState(false);
 
   const allRated = categories.every((c) => (ratings[c] ?? 0) > 0);
-  const commentTooShort = comment.trim().length < MIN_REVIEW_COMMENT_LENGTH;
+  const length = comment.trim().length;
+  const commentTooShort = length < MIN_REVIEW_COMMENT_LENGTH;
+  const progress = Math.min(100, (length / MIN_REVIEW_COMMENT_LENGTH) * 100);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     if (!allRated) {
-      setError(`Please rate all ${categories.length} categories.`);
+      setError(`Give a score for all ${categories.length} categories first.`);
       return;
     }
     if (commentTooShort) {
-      setError(`Please write at least ${MIN_REVIEW_COMMENT_LENGTH} characters.`);
+      setError(`Write at least ${MIN_REVIEW_COMMENT_LENGTH} characters so it actually helps.`);
       return;
     }
     setLoading(true);
@@ -80,21 +82,32 @@ export function ReviewForm({
   }
 
   return (
-    <Card className="p-5">
-      <h3 className="font-semibold text-gray-900">
-        {mode === "create" ? `Rate ${teacherName}` : "Edit your review"}
-      </h3>
-      <form onSubmit={submit} className="mt-4 space-y-5">
-        <div className="grid gap-4 sm:grid-cols-2">
+    <Card className="overflow-hidden p-0">
+      <div className="border-b border-navy-100 bg-navy-50/50 px-5 py-3.5">
+        <h3 className="font-display text-base font-extrabold tracking-tight text-navy-900">
+          {mode === "create" ? `Rate ${teacherName}` : "Edit your rating"}
+        </h3>
+      </div>
+
+      <form onSubmit={submit} className="space-y-5 p-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {categories.map((category) => (
-            <div key={category}>
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm font-medium text-gray-800">
-                  {RATING_CATEGORY_LABELS[category]}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500">{ratingCategoryHelp(category, isFaculty)}</p>
-              <div className="mt-1.5">
+            <div
+              key={category}
+              className={cx(
+                "rounded-2xl border p-3.5 transition duration-200",
+                (ratings[category] ?? 0) > 0
+                  ? "border-surf-200 bg-surf-100/30"
+                  : "border-navy-100 bg-navy-50/40"
+              )}
+            >
+              <p className="text-sm font-extrabold tracking-tight text-navy-900">
+                {RATING_CATEGORY_LABELS[category]}
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-navy-400">
+                {ratingCategoryHelp(category, isFaculty)}
+              </p>
+              <div className="mt-2 -ml-1">
                 <StarRatingInput
                   label={RATING_CATEGORY_LABELS[category]}
                   value={ratings[category] ?? 0}
@@ -106,27 +119,45 @@ export function ReviewForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-800">Your review</label>
+          <label
+            htmlFor="review-comment"
+            className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-navy-500"
+          >
+            What was the class actually like?
+          </label>
           <Textarea
+            id="review-comment"
             rows={5}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder={
-              isFaculty
-                ? "Focus on teaching quality: how they explain material, grading, workload, and how approachable they are. Keep it about the class, not the person."
-                : "Focus on how they do their job: communication, fairness, and how approachable they are. Keep it about their role, not the person."
-            }
+            placeholder="Be honest. Keep it about the class, not the person."
           />
-          <p className="mt-1 text-xs text-gray-400">
-            {comment.trim().length}/{MIN_REVIEW_COMMENT_LENGTH} minimum characters
-          </p>
+          <div className="mt-2 flex items-center gap-2.5">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-navy-100">
+              <div
+                className={cx(
+                  "h-full rounded-full transition-all duration-300",
+                  commentTooShort ? "bg-navy-300" : "bg-surf-400"
+                )}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p
+              className={cx(
+                "shrink-0 text-xs font-bold tabular-nums",
+                commentTooShort ? "text-navy-300" : "text-surf-600"
+              )}
+            >
+              {commentTooShort ? `${MIN_REVIEW_COMMENT_LENGTH - length} to go` : "Good to go"}
+            </p>
+          </div>
         </div>
 
         <ErrorText>{error}</ErrorText>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : mode === "create" ? "Submit review" : "Save changes"}
+            {loading ? "Saving…" : mode === "create" ? "Post rating" : "Save changes"}
           </Button>
           {onDone && (
             <Button type="button" variant="ghost" onClick={onDone}>

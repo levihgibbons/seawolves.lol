@@ -1,72 +1,69 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { NAV_LINKS } from "@/lib/nav";
 
 export async function Footer() {
   const session = await auth();
 
+  const linkClass =
+    "inline-flex min-h-9 items-center text-sm text-white/60 transition duration-200 hover:translate-x-0.5 hover:text-surf-300";
+
   return (
-    <footer className="mt-16 border-t border-gray-200 bg-gray-50">
-      <div className="footer-divider" />
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <div className="grid gap-8 sm:grid-cols-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <Image src="/logo.png" alt="" width={512} height={442} className="h-7 w-auto" />
-              <p className="text-sm font-semibold text-navy">seawolves.lol</p>
+    <footer className="surface-deep mt-20 overflow-hidden">
+      <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6">
+        <div
+          className="dot-grid pointer-events-none absolute inset-0 opacity-40"
+          aria-hidden
+        />
+        <div className="relative grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2.5">
+              <Image src="/logo.png" alt="" width={64} height={55} className="h-8 w-auto" />
+              <p className="font-display text-lg font-extrabold tracking-tight text-white">
+                seawolves<span className="text-surf-300">.lol</span>
+              </p>
             </div>
-            <p className="mt-3 max-w-[220px] text-sm leading-relaxed text-gray-500">
-              Honest teacher reviews, written by Seawolves, for Seawolves.
-            </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-gray-900">Site</p>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-600">
-              <li>
-                <Link href="/teachers" className="hover:text-navy">
-                  Roster
-                </Link>
-              </li>
-              <li>
-                <Link href="/leaderboard" className="hover:text-navy">
-                  Leaderboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/the-fallen" className="hover:text-navy">
-                  The Fallen
-                </Link>
-              </li>
-              <li>
-                <Link href="/announcements" className="hover:text-navy">
-                  Announcements
-                </Link>
-              </li>
+            <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-surf-300">
+              Explore
+            </p>
+            <ul className="mt-1">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className={linkClass}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-gray-900">Account</p>
-            <ul className="mt-2 space-y-1.5 text-sm text-gray-600">
+            <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-surf-300">
+              Account
+            </p>
+            <ul className="mt-1">
               {session?.user ? (
                 <>
                   <li>
-                    <Link href="/account" className="hover:text-navy">
+                    <Link href="/account" className={linkClass}>
                       My profile
                     </Link>
                   </li>
                   {session.user.role === "ADMIN" && (
                     <li>
-                      <Link href="/admin" className="hover:text-navy">
-                        Admin dashboard
+                      <Link href="/admin" className={linkClass}>
+                        Admin
                       </Link>
                     </li>
                   )}
                 </>
               ) : (
                 <li>
-                  <Link href="/login" className="hover:text-navy">
+                  <Link href="/login" className={linkClass}>
                     Sign in
                   </Link>
                 </li>
@@ -75,8 +72,14 @@ export async function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-200 pt-6">
-          <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} seawolves.lol</p>
+        <div className="relative mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-xl text-xs leading-relaxed text-white/40">
+            Reviews reflect the opinions of individual students, not verified facts or the position
+            of Pacifica Christian High School.
+          </p>
+          <p className="shrink-0 text-xs font-semibold text-white/40">
+            &copy; {new Date().getFullYear()} seawolves.lol
+          </p>
         </div>
       </div>
     </footer>

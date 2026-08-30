@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AdminUsersTable } from "@/components/admin/AdminUsersTable";
 import type { UserStatus } from "@/lib/constants";
 
-export const metadata = { title: "Manage Users" };
+export const metadata = { title: "Users" };
 
 export default async function AdminUsersPage() {
   const session = await auth();
@@ -22,7 +22,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <p className="mb-6 text-sm text-gray-600">
+      <p className="mb-6 text-sm text-navy-600">
         Suspend or ban accounts that repeatedly post abusive, off-topic, or spammy content.
         Suspended and banned users can&apos;t sign in.
       </p>

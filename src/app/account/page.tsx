@@ -2,13 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Card, Badge, Button } from "@/components/ui";
+import { Badge, ButtonLink, Card, EmptyState } from "@/components/ui";
 import { Avatar } from "@/components/Avatar";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { ProfileEditForm } from "@/components/ProfileEditForm";
+import { PageHero, PageContent } from "@/components/PageHero";
 import { formatRelativeTime } from "@/lib/format";
 import { reviewOverall } from "@/lib/ratings";
 import { usernameChangeAvailableAt } from "@/lib/username";
+import { ChatIcon, ShieldIcon, StarOutlineIcon } from "@/components/icons";
 
 export const metadata = { title: "My Profile" };
 
@@ -39,102 +41,151 @@ export default async function AccountPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <h1 className="text-2xl font-bold text-gray-900">My profile</h1>
+    <div>
+      <PageHero
+        title={session.user.username ?? "Your profile"}
+        description={
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="text-white/60">{session.user.email}</span>
+            <span className="text-white/25">·</span>
+            <span className="text-white/40">Seawolf since {joined}</span>
+          </span>
+        }
+      />
 
-      <Card className="relative mt-4 p-5">
-        <div className="flex items-start gap-4">
-          <Avatar name={session.user.username ?? "?"} photoUrl={me?.image} size="lg" />
-          <div className="min-w-0 flex-1">
-            <p className="text-lg font-bold text-gray-900">{session.user.username}</p>
-            <p className="text-sm text-gray-600">{session.user.email}</p>
-            <p className="mt-0.5 text-xs text-gray-400">Seawolf since {joined}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge tone="green">Email verified</Badge>
-              {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
+      <PageContent width="max-w-3xl">
+        <Card className="relative p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <Avatar name={session.user.username ?? "?"} photoUrl={me?.image} size="lg" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-display text-xl font-extrabold tracking-tight text-navy-900">
+                  {session.user.username}
+                </p>
+                <Badge tone="green">Verified</Badge>
+                {session.user.role === "ADMIN" && <Badge tone="navy">Admin</Badge>}
+              </div>
+              {me?.bio ? (
+                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-navy-600">
+                  {me.bio}
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-navy-300">No bio yet — add one.</p>
+              )}
+
+              <div className="mt-4 flex gap-6 border-t border-navy-50 pt-3.5">
+                <span className="text-sm text-navy-400">
+                  <strong className="font-display text-base font-extrabold text-navy-900">
+                    {reviews.length}
+                  </strong>{" "}
+                  {reviews.length === 1 ? "review" : "reviews"}
+                </span>
+                <span className="text-sm text-navy-400">
+                  <strong className="font-display text-base font-extrabold text-navy-900">
+                    {comments.length}
+                  </strong>{" "}
+                  {comments.length === 1 ? "comment" : "comments"}
+                </span>
+              </div>
             </div>
-            {me?.bio ? (
-              <p className="mt-3 whitespace-pre-line text-sm text-gray-700">{me.bio}</p>
-            ) : (
-              <p className="mt-3 text-sm text-gray-400">No bio yet.</p>
-            )}
           </div>
-        </div>
-        {session.user.role === "ADMIN" && (
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-md border border-steel-light bg-steel-light/20 px-3 py-2.5">
-            <p className="text-sm text-navy">You have admin access on this site.</p>
-            <Link href="/admin">
-              <Button variant="secondary" className="text-xs">
-                Go to admin dashboard
-              </Button>
-            </Link>
-          </div>
-        )}
-        {session.user.username && (
-          <ProfileEditForm
-            username={session.user.username}
-            initialBio={me?.bio ?? ""}
-            initialImage={me?.image ?? ""}
-            usernameChangeAvailableAt={usernameAvailableAt?.toISOString() ?? null}
-          />
-        )}
-      </Card>
 
-      <div className="mt-7">
-        <h2 className="text-lg font-semibold text-gray-900">Your reviews ({reviews.length})</h2>
-        {reviews.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">
-            You haven&apos;t reviewed any teachers yet.{" "}
-            <Link href="/teachers" className="font-medium text-navy hover:underline">
-              View the Roster
-            </Link>
-            .
-          </p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {reviews.map((review) => {
-              const overall = reviewOverall(review);
-              return (
-                <Link key={review.id} href={`/teachers/${review.teacherId}`}>
-                  <Card className="p-4 hover:shadow-md">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-gray-900">{review.teacher.name}</p>
-                      <StarRatingDisplay value={overall} size="sm" />
+          {session.user.role === "ADMIN" && (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-navy-800 px-4 py-3.5">
+              <p className="flex items-center gap-2 text-sm font-semibold text-white">
+                <ShieldIcon className="h-4 w-4 text-surf-300" />
+                Admin
+              </p>
+              <ButtonLink href="/admin" variant="onDark" size="sm">
+                Open dashboard
+              </ButtonLink>
+            </div>
+          )}
+
+          {session.user.username && (
+            <ProfileEditForm
+              username={session.user.username}
+              initialBio={me?.bio ?? ""}
+              initialImage={me?.image ?? ""}
+              usernameChangeAvailableAt={usernameAvailableAt?.toISOString() ?? null}
+            />
+          )}
+        </Card>
+
+        <section className="mt-10">
+          <h2 className="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-navy-900">
+            <StarOutlineIcon className="h-4 w-4 text-surf-500" />
+            Your ratings
+            <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-bold text-navy-500">
+              {reviews.length}
+            </span>
+          </h2>
+          {reviews.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              icon={<StarOutlineIcon className="h-6 w-6" />}
+              title="No ratings yet"
+              action={{ href: "/teachers", label: "Rate a teacher" }}
+            />
+          ) : (
+            <div className="mt-4 space-y-3">
+              {reviews.map((review) => (
+                <Link key={review.id} href={`/teachers/${review.teacherId}`} className="block">
+                  <Card className="p-4" interactive>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate font-bold text-navy-900">{review.teacher.name}</p>
+                      <StarRatingDisplay value={reviewOverall(review)} size="xs" />
                     </div>
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{review.comment}</p>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-navy-500">
+                      {review.comment}
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-2 text-xs text-navy-300">
                       <span>{formatRelativeTime(review.createdAt)}</span>
-                      {review.status === "REMOVED" && <Badge tone="red">Removed by moderator</Badge>}
+                      {review.status === "REMOVED" && <Badge tone="red">Removed</Badge>}
                     </div>
                   </Card>
                 </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </section>
 
-      <div className="mt-7">
-        <h2 className="text-lg font-semibold text-gray-900">Your comments ({comments.length})</h2>
-        {comments.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No comments yet.</p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {comments.map((comment) => (
-              <Link key={comment.id} href={`/teachers/${comment.teacherId}`}>
-                <Card className="p-4 hover:shadow-md">
-                  <p className="text-sm font-medium text-gray-900">{comment.teacher.name}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-gray-600">{comment.body}</p>
-                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
-                    <span>{formatRelativeTime(comment.createdAt)}</span>
-                    {comment.status === "REMOVED" && <Badge tone="red">Removed by moderator</Badge>}
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+        <section className="mt-10">
+          <h2 className="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-navy-900">
+            <ChatIcon className="h-4 w-4 text-surf-500" />
+            Your comments
+            <span className="rounded-full bg-navy-100 px-2 py-0.5 text-xs font-bold text-navy-500">
+              {comments.length}
+            </span>
+          </h2>
+          {comments.length === 0 ? (
+            <EmptyState
+              className="mt-4"
+              icon={<ChatIcon className="h-6 w-6" />}
+              title="No comments yet"
+            />
+          ) : (
+            <div className="mt-4 space-y-3">
+              {comments.map((comment) => (
+                <Link key={comment.id} href={`/teachers/${comment.teacherId}`} className="block">
+                  <Card className="p-4" interactive>
+                    <p className="truncate text-sm font-bold text-navy-900">
+                      {comment.teacher.name}
+                    </p>
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-navy-500">
+                      {comment.body}
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-2 text-xs text-navy-300">
+                      <span>{formatRelativeTime(comment.createdAt)}</span>
+                      {comment.status === "REMOVED" && <Badge tone="red">Removed</Badge>}
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </PageContent>
     </div>
   );
 }
