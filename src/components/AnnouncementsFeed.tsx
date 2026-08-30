@@ -3,9 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Button, Input, Label, Textarea, ErrorText, Card } from "@/components/ui";
-import { formatRelativeTime } from "@/lib/format";
+import { formatDateTimeStacked } from "@/lib/format";
 import { fileToAnnouncementImageDataUrl } from "@/lib/image";
 
+// No author field on purpose — announcements are posted anonymously as "the
+// admins," not attributed to whichever admin happened to post them. (Who
+// posted/edited/deleted is still tracked internally in the audit log.)
 export type AnnouncementItem = {
   id: string;
   title: string;
@@ -13,7 +16,6 @@ export type AnnouncementItem = {
   imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
-  authorUsername: string | null;
 };
 
 function ImagePicker({
@@ -256,15 +258,19 @@ function AnnouncementCard({
   }
 
   const wasEdited = announcement.updatedAt !== announcement.createdAt;
+  const posted = formatDateTimeStacked(new Date(announcement.createdAt));
 
   return (
     <Card className="p-4">
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <p className="font-semibold text-gray-900">{announcement.title}</p>
-        <span className="shrink-0 text-xs text-gray-400">
-          {formatRelativeTime(new Date(announcement.createdAt))}
-          {wasEdited && " (edited)"}
-        </span>
+        <div className="shrink-0 text-right text-xs leading-tight text-gray-400">
+          <div>{posted.date}</div>
+          <div>
+            {posted.time}
+            {wasEdited && " · edited"}
+          </div>
+        </div>
       </div>
       {announcement.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element -- base64 data URL, not a remote asset
@@ -275,9 +281,6 @@ function AnnouncementCard({
         />
       )}
       <p className="mt-1.5 whitespace-pre-line text-sm text-gray-700">{announcement.body}</p>
-      {announcement.authorUsername && (
-        <p className="mt-2 text-xs text-gray-400">— @{announcement.authorUsername}</p>
-      )}
       {isAdmin && (
         <div className="mt-3 flex gap-2 border-t border-gray-100 pt-3">
           <Button variant="ghost" onClick={() => setEditing(true)} className="text-xs">

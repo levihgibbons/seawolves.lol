@@ -1,3 +1,12 @@
+// Absolute date + time, split into two strings so callers can stack them
+// (e.g. a channel-style announcement timestamp) instead of one long line.
+export function formatDateTimeStacked(date: Date): { date: string; time: string } {
+  return {
+    date: new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(date),
+    time: new Intl.DateTimeFormat("en-US", { timeStyle: "short" }).format(date),
+  };
+}
+
 export function formatRelativeTime(date: Date): string {
   const seconds = Math.round((Date.now() - date.getTime()) / 1000);
   const units: [number, string][] = [
