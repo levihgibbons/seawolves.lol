@@ -37,3 +37,40 @@ export async function fileToAvatarDataUrl(file: File): Promise<string> {
     bitmap.close();
   }
 }
+
+// Same idea for announcement images, but shown full-width rather than
+// cropped to a circle, so this keeps the original aspect ratio and just
+// caps the longest side.
+export const ANNOUNCEMENT_IMAGE_MAX_DIMENSION = 1600;
+export const ANNOUNCEMENT_IMAGE_JPEG_QUALITY = 0.85;
+export const MAX_ANNOUNCEMENT_IMAGE_FILE_BYTES = 10 * 1024 * 1024;
+
+export async function fileToAnnouncementImageDataUrl(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please choose an image file.");
+  }
+  if (file.size > MAX_ANNOUNCEMENT_IMAGE_FILE_BYTES) {
+    throw new Error("That image is too large — try one under 10MB.");
+  }
+
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(
+      1,
+      ANNOUNCEMENT_IMAGE_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height)
+    );
+    const targetWidth = Math.round(bitmap.width * scale);
+    const targetHeight = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Couldn't process that image.");
+
+    ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+    return canvas.toDataURL("image/jpeg", ANNOUNCEMENT_IMAGE_JPEG_QUALITY);
+  } finally {
+    bitmap.close();
+  }
+}

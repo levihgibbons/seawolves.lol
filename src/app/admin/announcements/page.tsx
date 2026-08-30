@@ -1,21 +1,8 @@
-import { prisma } from "@/lib/prisma";
-import { AdminAnnouncementManager } from "@/components/admin/AdminAnnouncementManager";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Manage Announcements" };
-
-export default async function AdminAnnouncementsPage() {
-  const announcements = await prisma.announcement.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { author: { select: { username: true } } },
-  });
-
-  const data = announcements.map((a) => ({
-    id: a.id,
-    title: a.title,
-    body: a.body,
-    createdAt: a.createdAt.toISOString(),
-    authorUsername: a.author?.username ?? null,
-  }));
-
-  return <AdminAnnouncementManager announcements={data} />;
+// Full create/edit/delete for announcements now lives on the public
+// /announcements page itself (shown to admins only) instead of duplicating
+// that UI here — see src/components/AnnouncementsFeed.tsx.
+export default function AdminAnnouncementsRedirect() {
+  redirect("/announcements");
 }

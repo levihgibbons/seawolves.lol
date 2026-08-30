@@ -26,7 +26,12 @@ export async function POST(request: Request) {
     }
 
     const announcement = await prisma.announcement.create({
-      data: { title: parsed.data.title, body: parsed.data.body, authorId: admin.id },
+      data: {
+        title: parsed.data.title,
+        body: parsed.data.body,
+        imageUrl: parsed.data.imageUrl || null,
+        authorId: admin.id,
+      },
     });
 
     await logAdminAction({

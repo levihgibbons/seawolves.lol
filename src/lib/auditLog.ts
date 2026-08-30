@@ -20,6 +20,7 @@ export const ADMIN_ACTIONS = [
   "DEACTIVATE_TEACHER",
   "REACTIVATE_TEACHER",
   "POST_ANNOUNCEMENT",
+  "UPDATE_ANNOUNCEMENT",
   "DELETE_ANNOUNCEMENT",
 ] as const;
 export type AdminActionType = (typeof ADMIN_ACTIONS)[number];

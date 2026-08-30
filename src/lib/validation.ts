@@ -117,10 +117,36 @@ export const profileSchema = z.object({
   username: usernameSchema.optional(),
 });
 
+// Announcement images are uploaded as a file (see src/lib/image.ts) and
+// stored as a base64 JPEG data URL, same pattern as profile pictures — just
+// resized larger since these are shown full-width, not cropped to a circle.
+const MAX_ANNOUNCEMENT_IMAGE_DATA_URL_LENGTH = 3_000_000;
+const IMAGE_DATA_URL_PATTERN = /^data:image\/(png|jpe?g|webp|gif);base64,/;
+
+const announcementImageField = z
+  .string()
+  .trim()
+  .max(MAX_ANNOUNCEMENT_IMAGE_DATA_URL_LENGTH, "That image is too large.")
+  .refine((v) => v === "" || IMAGE_DATA_URL_PATTERN.test(v), "Invalid image.")
+  .optional();
+
 export const announcementSchema = z.object({
   title: z.string().trim().min(1, "Title is required.").max(120),
   body: z.string().trim().min(1, "Announcement can't be empty.").max(2000),
+  imageUrl: announcementImageField,
 });
+
+// PATCH allows updating just some fields, but title/body still can't be
+// blanked out if provided — reuse the same per-field rules as create.
+export const announcementUpdateSchema = z
+  .object({
+    title: announcementSchema.shape.title.optional(),
+    body: announcementSchema.shape.body.optional(),
+    imageUrl: announcementImageField,
+  })
+  .refine((v) => v.title !== undefined || v.body !== undefined || v.imageUrl !== undefined, {
+    message: "Nothing to update.",
+  });
 
 export const teacherSchema = z.object({
   name: z.string().trim().min(1).max(150),

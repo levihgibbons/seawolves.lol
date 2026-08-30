@@ -182,7 +182,7 @@ model Flag {
 model AdminAction {
   id         String   @id @default(cuid())
   adminId    String
-  action     String // e.g. REMOVE_REVIEW, DISMISS_REPORT, SUSPEND_USER, BAN_USER, REACTIVATE_USER, PROMOTE_ADMIN, DEMOTE_ADMIN, CREATE_TEACHER, UPDATE_TEACHER, DEACTIVATE_TEACHER, REACTIVATE_TEACHER, POST_ANNOUNCEMENT, DELETE_ANNOUNCEMENT
+  action     String // e.g. REMOVE_REVIEW, DISMISS_REPORT, SUSPEND_USER, BAN_USER, REACTIVATE_USER, PROMOTE_ADMIN, DEMOTE_ADMIN, CREATE_TEACHER, UPDATE_TEACHER, DEACTIVATE_TEACHER, REACTIVATE_TEACHER, POST_ANNOUNCEMENT, UPDATE_ANNOUNCEMENT, DELETE_ANNOUNCEMENT
   targetType String // REVIEW | COMMENT | USER | TEACHER | ANNOUNCEMENT
   targetId   String?
   detail     String?
@@ -203,6 +203,7 @@ model Announcement {
   id        String   @id @default(cuid())
   title     String
   body      String
+  imageUrl  String? // optional image, attached as a base64 JPEG data URL — see src/lib/image.ts fileToAnnouncementImageDataUrl
   authorId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

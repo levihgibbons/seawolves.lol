@@ -13,9 +13,9 @@ export type NotificationItem = {
 
 const SEEN_KEY = "seawolves:lastSeenAnnouncementAt";
 
-// The bell surfaces new site-wide announcements (see /announcements and
-// src/app/admin/announcements) as notifications — it's the alert, the
-// /announcements page is the archive.
+// The bell surfaces new site-wide announcements (posted and edited by
+// admins from /announcements itself — see AnnouncementsFeed.tsx) as
+// notifications — it's the alert, the /announcements page is the archive.
 export function NotificationBell({ notifications }: { notifications: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(false);
